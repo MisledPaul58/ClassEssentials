@@ -17,12 +17,12 @@ export const ACADEMIC_INFO = {
 };
 
 export const FIREBASE_CONFIG = {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyAinOyYRsr2E52pdX7b6MoKWB5NhlxWKVI",
+    authDomain: "classessentials-dam.firebaseapp.com",
+    projectId: "classessentials-dam",
+    storageBucket: "classessentials-dam.firebasestorage.app",
+    messagingSenderId: "251071151524",
+    appId: "1:251071151524:web:49ff006ddfbd5602785531"
 };
 
 export const ADMIN_CONFIG = {

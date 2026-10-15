@@ -67,7 +67,7 @@ class CloudDatabaseService {
 
         if (config && config.projectId && config.apiKey && !config.apiKey.includes("AIzaSyD-CLASS-ESSENTIALS")) {
             try {
-                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js");
                 const { 
                     getFirestore, 
                     collection, 
@@ -79,7 +79,7 @@ class CloudDatabaseService {
                     serverTimestamp, 
                     query, 
                     orderBy 
-                } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+                } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
 
                 let app;
                 const apps = getApps();
@@ -199,7 +199,7 @@ class CloudDatabaseService {
 
         if (this.isCloudConnected && this.db) {
             try {
-                const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+                const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
                 await addDoc(collection(this.db, "announcements"), {
                     ...newPost,
                     createdAt: serverTimestamp()
@@ -224,7 +224,7 @@ class CloudDatabaseService {
     async deleteAnnouncement(postId) {
         if (this.isCloudConnected && this.db) {
             try {
-                const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+                const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
                 await deleteDoc(doc(this.db, "announcements", postId));
                 return { success: true, inCloud: true };
             } catch (err) {

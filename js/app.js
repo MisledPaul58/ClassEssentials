@@ -3,14 +3,17 @@
  * IES Las Encinas - 1º DAM (Curso 2026-2027)
  */
 
-import { ACADEMIC_INFO, MODULES_DATA, HOLIDAYS_DATA, MILESTONES_DATA, DEFAULT_ANNOUNCEMENTS } from './data.js';
+import { ACADEMIC_INFO, MODULES_DATA, HOLIDAYS_DATA, MILESTONES_DATA, DEFAULT_ANNOUNCEMENTS, ADMIN_CONFIG } from './data.js';
 
 // Claves de LocalStorage
 const STORAGE_KEYS = {
     ABSENCES: 'classessentials_absences_v1',
     COMMUNITY_POSTS: 'classessentials_community_posts_v1',
+    OFFICIAL_CUSTOM_POSTS: 'classessentials_official_custom_v1',
+    DELETED_OFFICIAL_POSTS: 'classessentials_deleted_official_v1',
     THEME: 'classessentials_theme_v1',
-    MATRICULA_SCOPE: 'classessentials_matricula_scope_v1' // '1st_year' (150h) o 'full_cycle' (300h)
+    MATRICULA_SCOPE: 'classessentials_matricula_scope_v1', // '1st_year' (150h) o 'full_cycle' (300h)
+    ADMIN_SESSION: 'classessentials_admin_active_v1'
 };
 
 // Estado global de la aplicación
@@ -18,6 +21,9 @@ const AppState = {
     currentDate: new Date(),
     absences: {}, // { moduleId: { justified: 0, unjustified: 0 } }
     communityPosts: [],
+    officialCustomPosts: [],
+    deletedOfficialPostIds: [],
+    isAdmin: false,
     matriculaScope: '1st_year', // Por defecto 1º DAM (1.000h -> 150h límite)
     calendarFilter: 'all',
     resourceSearchQuery: '',
@@ -38,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderUpcomingHolidayBanner();
     renderAnnouncements();
+    updateAdminUiState();
     initEventListeners();
 });
 
@@ -64,13 +71,12 @@ function toggleTheme() {
 }
 
 function loadStoredData() {
-    // Cargar faltas
+    // 1. Cargar faltas
     try {
         const storedAbsences = localStorage.getItem(STORAGE_KEYS.ABSENCES);
         if (storedAbsences) {
             AppState.absences = JSON.parse(storedAbsences);
         } else {
-            // Inicializar a 0 para todos los módulos
             MODULES_DATA.forEach(mod => {
                 AppState.absences[mod.id] = { justified: 0, unjustified: 0 };
             });
@@ -82,24 +88,46 @@ function loadStoredData() {
         });
     }
 
-    // Asegurar que todos los módulos existan en el estado
     MODULES_DATA.forEach(mod => {
         if (!AppState.absences[mod.id]) {
             AppState.absences[mod.id] = { justified: 0, unjustified: 0 };
         }
     });
 
-    // Cargar publicaciones comunitarias de compañeros
+    // 2. Cargar publicaciones comunitarias
     try {
         const storedPosts = localStorage.getItem(STORAGE_KEYS.COMMUNITY_POSTS);
         if (storedPosts) {
             AppState.communityPosts = JSON.parse(storedPosts);
         }
     } catch (e) {
-        console.error("Error al cargar posts de la comunidad:", e);
+        console.error("Error al cargar posts comunitarios:", e);
     }
 
-    // Cargar ámbito de matrícula
+    // 3. Cargar anuncios oficiales añadidos por el dueño
+    try {
+        const storedOfficialCustom = localStorage.getItem(STORAGE_KEYS.OFFICIAL_CUSTOM_POSTS);
+        if (storedOfficialCustom) {
+            AppState.officialCustomPosts = JSON.parse(storedOfficialCustom);
+        }
+    } catch (e) {
+        console.error("Error al cargar posts oficiales personalizados:", e);
+    }
+
+    // 4. Cargar IDs de anuncios oficiales eliminados por el admin
+    try {
+        const storedDeleted = localStorage.getItem(STORAGE_KEYS.DELETED_OFFICIAL_POSTS);
+        if (storedDeleted) {
+            AppState.deletedOfficialPostIds = JSON.parse(storedDeleted);
+        }
+    } catch (e) {
+        console.error("Error al cargar lista negra de anuncios oficiales:", e);
+    }
+
+    // 5. Cargar sesión de administrador
+    AppState.isAdmin = localStorage.getItem(STORAGE_KEYS.ADMIN_SESSION) === 'true';
+
+    // 6. Cargar ámbito de matrícula
     const storedScope = localStorage.getItem(STORAGE_KEYS.MATRICULA_SCOPE);
     if (storedScope === 'full_cycle' || storedScope === '1st_year') {
         AppState.matriculaScope = storedScope;
@@ -118,7 +146,23 @@ function saveCommunityPosts() {
     try {
         localStorage.setItem(STORAGE_KEYS.COMMUNITY_POSTS, JSON.stringify(AppState.communityPosts));
     } catch (e) {
-        console.error("Error al guardar posts:", e);
+        console.error("Error al guardar posts comunitarios:", e);
+    }
+}
+
+function saveOfficialCustomPosts() {
+    try {
+        localStorage.setItem(STORAGE_KEYS.OFFICIAL_CUSTOM_POSTS, JSON.stringify(AppState.officialCustomPosts));
+    } catch (e) {
+        console.error("Error al guardar posts oficiales:", e);
+    }
+}
+
+function saveDeletedOfficialPosts() {
+    try {
+        localStorage.setItem(STORAGE_KEYS.DELETED_OFFICIAL_POSTS, JSON.stringify(AppState.deletedOfficialPostIds));
+    } catch (e) {
+        console.error("Error al guardar lista negra de anuncios:", e);
     }
 }
 
@@ -132,7 +176,6 @@ function formatDateSpanish(dateObj) {
 }
 
 function parseDate(dateStr) {
-    // Convierte YYYY-MM-DD en fecha local sin desfase de zona horaria
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day);
 }
@@ -145,13 +188,9 @@ function renderHeaderDate() {
     }
 }
 
-/**
- * Encuentra el próximo festivo o el festivo en curso según la fecha actual
- */
 function getUpcomingHolidayInfo() {
     const today = new Date(AppState.currentDate.getFullYear(), AppState.currentDate.getMonth(), AppState.currentDate.getDate());
     
-    // Buscar si hoy estamos en un festivo
     for (const h of HOLIDAYS_DATA) {
         const start = parseDate(h.startDate);
         const end = parseDate(h.endDate);
@@ -167,7 +206,6 @@ function getUpcomingHolidayInfo() {
         }
     }
 
-    // Buscar el próximo festivo en el futuro
     let nextHoliday = null;
     let minDiffMs = Infinity;
 
@@ -193,9 +231,6 @@ function getUpcomingHolidayInfo() {
     return null;
 }
 
-/**
- * Encuentra el próximo hito de exámenes o notas
- */
 function getNextMilestoneInfo() {
     const today = new Date(AppState.currentDate.getFullYear(), AppState.currentDate.getMonth(), AppState.currentDate.getDate());
     let nextMilestone = null;
@@ -289,7 +324,6 @@ function renderCalendar() {
     const timelineContainer = document.getElementById('calendar-timeline');
     if (!timelineContainer) return;
 
-    // Unificar Festivos y Hitos Académicos
     const events = [];
 
     HOLIDAYS_DATA.forEach(h => {
@@ -308,7 +342,7 @@ function renderCalendar() {
     MILESTONES_DATA.forEach(m => {
         events.push({
             id: m.id,
-            category: m.type, // 'exam', 'grades', 'internship', 'reinforcement'
+            category: m.type,
             title: m.title,
             startDate: m.startDate,
             endDate: m.endDate,
@@ -318,12 +352,10 @@ function renderCalendar() {
         });
     });
 
-    // Ordenar cronológicamente por startDate
     events.sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate));
 
     const today = new Date(AppState.currentDate.getFullYear(), AppState.currentDate.getMonth(), AppState.currentDate.getDate());
 
-    // Filtrar según AppState.calendarFilter
     const filtered = events.filter(ev => {
         const start = parseDate(ev.startDate);
         const end = parseDate(ev.endDate);
@@ -339,7 +371,7 @@ function renderCalendar() {
         if (AppState.calendarFilter === 'exams') {
             return ev.category === 'exam' || ev.category === 'grades';
         }
-        return true; // 'all'
+        return true;
     });
 
     if (filtered.length === 0) {
@@ -393,11 +425,6 @@ function renderCalendar() {
    CALCULADORA DE FALTAS Y EVALUACIÓN CONTINUA
    ========================================================================== */
 
-/**
- * Calcula estadísticas globales y estado de pérdida de matrícula
- * Regla: La pérdida de matrícula se produce al faltar injustificadamente al 15%
- * de las horas totales.
- */
 function getMatriculaStats() {
     let totalUnjustified = 0;
     let totalJustified = 0;
@@ -408,9 +435,6 @@ function getMatriculaStats() {
         totalJustified += Number(modAbs.justified) || 0;
     });
 
-    // Límite según ámbito seleccionado:
-    // 1º DAM: 1.000 horas -> 15% = 150 faltas injustificadas
-    // Ciclo Completo: 2.000 horas -> 15% = 300 faltas injustificadas
     const limit = AppState.matriculaScope === '1st_year'
         ? ACADEMIC_INFO.matriculaLimitHours1stYear
         : ACADEMIC_INFO.matriculaLimitHoursFullCycle;
@@ -522,7 +546,6 @@ function renderMatriculaSummary() {
         </div>
     `;
 
-    // Botón para alternar ámbito de matrícula (1º curso vs ciclo)
     const toggleBtn = document.getElementById('btn-toggle-scope');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
@@ -534,10 +557,6 @@ function renderMatriculaSummary() {
     }
 }
 
-/**
- * Renderiza la cuadrícula con las tarjetas individuales de cada módulo
- * REGLA: Cuentan tanto justificadas como injustificadas para la evaluación continua.
- */
 function renderModulesGrid() {
     const gridContainer = document.getElementById('modules-grid');
     if (!gridContainer) return;
@@ -546,16 +565,14 @@ function renderModulesGrid() {
         const modAbs = AppState.absences[mod.id] || { justified: 0, unjustified: 0 };
         const justified = Number(modAbs.justified) || 0;
         const unjustified = Number(modAbs.unjustified) || 0;
-        const totalAbsences = justified + unjustified; // Cuentan ambas!
+        const totalAbsences = justified + unjustified;
         const limit = mod.limitAbsences;
         const remaining = limit - totalAbsences;
 
-        // Porcentajes para la barra bi-color
         const percentJustified = Math.min((justified / limit) * 100, 100);
         const percentUnjustified = Math.min((unjustified / limit) * 100, 100 - percentJustified);
         const totalPercent = Math.min(Math.round((totalAbsences / limit) * 100), 100);
 
-        // Estado visual
         let statusClass = 'safe';
         let statusText = `Te quedan ${remaining} faltas para perder la evaluación continua`;
         let bannerIcon = '🟢';
@@ -592,7 +609,6 @@ function renderModulesGrid() {
                     </div>
                 </div>
 
-                <!-- Inputs de faltas con Steppers -->
                 <div class="module-inputs-row">
                     <div class="absence-input-block">
                         <label class="absence-input-label" for="input-justified-${mod.id}">
@@ -637,7 +653,6 @@ function renderModulesGrid() {
                     </div>
                 </div>
 
-                <!-- Indicador visual de faltas acumuladas -->
                 <div class="module-progress-section">
                     <div class="module-progress-header">
                         <span class="module-total-label">Total faltas acumuladas (J + I):</span>
@@ -646,14 +661,12 @@ function renderModulesGrid() {
                         </span>
                     </div>
 
-                    <!-- Barra Bi-Color (Justificadas Azul, Injustificadas Naranja) -->
                     <div class="module-progress-bar-wrap" title="${justified} Justificadas + ${unjustified} Injustificadas = ${totalAbsences} de ${limit}">
                         <div class="bar-segment-justified" style="width: ${percentJustified}%;"></div>
                         <div class="bar-segment-unjustified ${totalAbsences >= limit ? 'bar-segment-danger' : ''}" style="width: ${percentUnjustified}%;"></div>
                     </div>
                 </div>
 
-                <!-- Estado para Evaluación Continua -->
                 <div class="module-status-banner ${statusClass}">
                     <span>${bannerIcon} ${statusText}</span>
                     <span class="remaining-count">${remaining > 0 ? `${remaining} restantes` : '0'}</span>
@@ -666,7 +679,6 @@ function renderModulesGrid() {
 }
 
 function attachModuleEvents() {
-    // Steppers + / -
     document.querySelectorAll('.stepper-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const action = btn.dataset.action;
@@ -685,7 +697,6 @@ function attachModuleEvents() {
         });
     });
 
-    // Inputs directos de texto
     document.querySelectorAll('.stepper-input').forEach(input => {
         input.addEventListener('change', (e) => {
             const type = input.dataset.type;
@@ -703,8 +714,6 @@ function updateAbsenceValue(moduleId, type, val) {
     }
     AppState.absences[moduleId][type] = val;
     saveAbsences();
-
-    // Re-renderizar componentes reactivos
     renderModulesGrid();
     renderMatriculaSummary();
 }
@@ -772,29 +781,46 @@ function handleFileImport(e) {
         }
     };
     reader.readAsText(file);
-    e.target.value = ''; // Reset input
+    e.target.value = '';
 }
 
 /* ==========================================================================
-   TABLÓN DE ANUNCIOS, RECURSOS Y ESCALABILIDAD
+   TABLÓN DE ANUNCIOS, MODO ADMINISTRADOR Y BORRADO FÁCIL
    ========================================================================== */
 
 function renderAnnouncements() {
+    renderAdminToolbar();
+
     const container = document.getElementById('resources-grid');
     if (!container) return;
 
-    // Unir anuncios predeterminados con los subidos por compañeros
+    // Filtrar los anuncios oficiales que el admin haya borrado
+    const activeDefaultAnnouncements = DEFAULT_ANNOUNCEMENTS.filter(
+        post => !AppState.deletedOfficialPostIds.includes(post.id)
+    ).map(p => ({ ...p, isCommunity: false, isCustomOfficial: false }));
+
+    const activeCustomOfficialPosts = AppState.officialCustomPosts.map(p => ({
+        ...p, isCommunity: false, isCustomOfficial: true
+    }));
+
+    const communityPosts = AppState.communityPosts.map(p => ({
+        ...p, isCommunity: true, isCustomOfficial: false
+    }));
+
+    // Lista unificada
     const allPosts = [
-        ...AppState.communityPosts.map(p => ({ ...p, isCommunity: true })),
-        ...DEFAULT_ANNOUNCEMENTS.map(p => ({ ...p, isCommunity: false }))
+        ...activeCustomOfficialPosts,
+        ...communityPosts,
+        ...activeDefaultAnnouncements
     ];
 
-    // Filtrar por búsqueda y categoría
     const query = AppState.resourceSearchQuery.trim().toLowerCase();
     const category = AppState.resourceCategoryFilter;
 
     const filtered = allPosts.filter(post => {
-        const matchesCategory = category === 'all' || post.category.toLowerCase() === category.toLowerCase();
+        const matchesCategory = category === 'all' || 
+            (category === 'Comunidad' ? post.isCommunity : post.category.toLowerCase() === category.toLowerCase());
+        
         const matchesQuery = !query || 
             post.title.toLowerCase().includes(query) ||
             post.description.toLowerCase().includes(query) ||
@@ -820,10 +846,10 @@ function renderAnnouncements() {
         const hasLink = post.link && post.link.trim() !== '';
 
         return `
-            <div class="resource-card ${isOwner ? 'owner-post' : 'peer-post'}">
+            <div class="resource-card ${isOwner ? 'owner-post' : 'peer-post'}" id="card-${post.id}">
                 <div class="resource-header">
                     <span class="resource-category">${post.category}</span>
-                    <span class="resource-badge">${post.badge || (isOwner ? 'Oficial' : 'Aporte')}</span>
+                    <span class="resource-badge">${post.badge || (isOwner ? 'Oficial' : 'Aporte de Clase')}</span>
                 </div>
 
                 <h3 class="resource-title">${post.title}</h3>
@@ -842,18 +868,34 @@ function renderAnnouncements() {
                     <span>${dateStr}</span>
                 </div>
 
-                ${post.isCommunity ? `
-                    <div style="display: flex; justify-content: flex-end; margin-top: 0.25rem;">
-                        <button class="btn btn-danger-outline btn-sm btn-delete-post" data-id="${post.id}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">
-                            🗑️ Eliminar aporte
+                <!-- Botón de Borrado: Visible para posts propios o siempre si está en MODO ADMIN -->
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; margin-top: 0.35rem; padding-top: 0.35rem; border-top: 1px dashed var(--border-color);">
+                    ${AppState.isAdmin ? `
+                        <button class="btn-admin-delete" data-id="${post.id}" data-is-community="${post.isCommunity}" data-is-custom-official="${post.isCustomOfficial || false}" title="Eliminar este anuncio como Administrador">
+                            <span>🗑️</span> Borrar Anuncio (Admin)
                         </button>
-                    </div>
-                ` : ''}
+                    ` : (post.isCommunity ? `
+                        <button class="btn btn-danger-outline btn-sm btn-delete-post" data-id="${post.id}" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;">
+                            🗑️ Eliminar de mi navegador
+                        </button>
+                    ` : '')}
+                </div>
             </div>
         `;
     }).join('');
 
-    // Eventos de eliminación de posts comunitarios
+    // Listener para borrado en MODO ADMIN
+    document.querySelectorAll('.btn-admin-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const postId = btn.dataset.id;
+            const isCommunity = btn.dataset.isCommunity === 'true';
+            const isCustomOfficial = btn.dataset.isCustomOfficial === 'true';
+
+            deleteAnnouncementAsAdmin(postId, isCommunity, isCustomOfficial);
+        });
+    });
+
+    // Listener para borrado de post propio por compañeros
     document.querySelectorAll('.btn-delete-post').forEach(btn => {
         btn.addEventListener('click', () => {
             const postId = btn.dataset.id;
@@ -867,9 +909,223 @@ function renderAnnouncements() {
     });
 }
 
-function openPublishModal() {
-    const modal = document.getElementById('publish-modal');
+function renderAdminToolbar() {
+    const toolbarContainer = document.getElementById('admin-toolbar-wrap');
+    if (!toolbarContainer) return;
+
+    if (!AppState.isAdmin) {
+        toolbarContainer.innerHTML = '';
+        return;
+    }
+
+    toolbarContainer.innerHTML = `
+        <div class="admin-banner">
+            <div class="admin-banner-text">
+                <span class="admin-banner-title">
+                    <span>👑</span> Modo Administrador Activo (Dueño de ClassEssentials)
+                </span>
+                <span class="admin-banner-desc">
+                    Puedes borrar cualquier anuncio de la web con el botón rojo "Borrar Anuncio", crear anuncios oficiales o restaurar los predeterminados.
+                </span>
+            </div>
+
+            <div class="admin-actions-group">
+                <button class="btn btn-primary btn-sm" id="btn-admin-add-official">
+                    <span>➕</span> Publicar Anuncio Oficial
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btn-admin-restore-defaults" title="Restaurar anuncios predeterminados si borraste alguno">
+                    <span>🔄</span> Restaurar Originales
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btn-admin-export-code" title="Copiar el código de anuncios para pegarlo en data.js y guardarlo en GitHub">
+                    <span>📋</span> Copiar JSON para GitHub
+                </button>
+                <button class="btn btn-danger-outline btn-sm" id="btn-admin-logout" title="Salir del modo administrador">
+                    <span>🔒</span> Salir
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Eventos de la barra de administrador
+    const btnAddOfficial = document.getElementById('btn-admin-add-official');
+    if (btnAddOfficial) {
+        btnAddOfficial.addEventListener('click', () => {
+            openPublishModal(true); // true = modo admin
+        });
+    }
+
+    const btnRestore = document.getElementById('btn-admin-restore-defaults');
+    if (btnRestore) {
+        btnRestore.addEventListener('click', () => {
+            if (confirm('¿Deseas restaurar todos los anuncios oficiales iniciales que hayan sido borrados?')) {
+                AppState.deletedOfficialPostIds = [];
+                saveDeletedOfficialPosts();
+                renderAnnouncements();
+                showToast('Anuncios oficiales restaurados', 'success');
+            }
+        });
+    }
+
+    const btnExportCode = document.getElementById('btn-admin-export-code');
+    if (btnExportCode) {
+        btnExportCode.addEventListener('click', copyAnnouncementsCodeForGitHub);
+    }
+
+    const btnLogout = document.getElementById('btn-admin-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', logoutAdmin);
+    }
+}
+
+/**
+ * Borra un anuncio de forma inmediata con permisos de Administrador
+ */
+function deleteAnnouncementAsAdmin(postId, isCommunity, isCustomOfficial) {
+    if (!confirm('¿Seguro que deseas eliminar este anuncio del tablón?')) {
+        return;
+    }
+
+    if (isCustomOfficial) {
+        AppState.officialCustomPosts = AppState.officialCustomPosts.filter(p => p.id !== postId);
+        saveOfficialCustomPosts();
+    } else if (isCommunity) {
+        AppState.communityPosts = AppState.communityPosts.filter(p => p.id !== postId);
+        saveCommunityPosts();
+    } else {
+        // Es un anuncio oficial predeterminado de DEFAULT_ANNOUNCEMENTS
+        if (!AppState.deletedOfficialPostIds.includes(postId)) {
+            AppState.deletedOfficialPostIds.push(postId);
+            saveDeletedOfficialPosts();
+        }
+    }
+
+    renderAnnouncements();
+    showToast('Anuncio eliminado correctamente por el Administrador', 'success');
+}
+
+/**
+ * Permite copiar el listado activo para pegarlo en data.js si el dueño quiere
+ * subirlo al repositorio GitHub de manera permanente para todos los visitantes.
+ */
+function copyAnnouncementsCodeForGitHub() {
+    const activeOfficial = [
+        ...AppState.officialCustomPosts,
+        ...DEFAULT_ANNOUNCEMENTS.filter(p => !AppState.deletedOfficialPostIds.includes(p.id))
+    ];
+
+    const jsonStr = JSON.stringify(activeOfficial, null, 4);
+
+    navigator.clipboard.writeText(jsonStr).then(() => {
+        showToast('JSON de anuncios copiado al portapapeles para data.js', 'success');
+        alert('¡Copiado! Puedes pegar este contenido en la variable DEFAULT_ANNOUNCEMENTS de js/data.js y hacer git commit si deseas que tus cambios se publiquen de forma fija en GitHub para todos.');
+    }).catch(() => {
+        prompt('Copia este JSON para actualizar js/data.js:', jsonStr);
+    });
+}
+
+function updateAdminUiState() {
+    const toggleBtn = document.getElementById('btn-admin-toggle');
+    const toggleIcon = document.getElementById('admin-toggle-icon');
+    const toggleText = document.getElementById('admin-toggle-text');
+
+    if (toggleBtn && toggleIcon && toggleText) {
+        if (AppState.isAdmin) {
+            toggleBtn.classList.add('is-admin');
+            toggleIcon.textContent = '👑';
+            toggleText.textContent = 'Admin Activo';
+            toggleBtn.title = 'Modo Administrador activado. Pulsa para salir.';
+        } else {
+            toggleBtn.classList.remove('is-admin');
+            toggleIcon.textContent = '🔒';
+            toggleText.textContent = 'Acceso Admin';
+            toggleBtn.title = 'Acceso para el dueño de la web para borrar y gestionar anuncios.';
+        }
+    }
+}
+
+function openAdminLoginModal() {
+    const modal = document.getElementById('admin-login-modal');
     if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        const pinInput = document.getElementById('admin-pin-input');
+        if (pinInput) {
+            pinInput.value = '';
+            setTimeout(() => pinInput.focus(), 100);
+        }
+    }
+}
+
+function closeAdminLoginModal() {
+    const modal = document.getElementById('admin-login-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function handleAdminLoginSubmit(e) {
+    e.preventDefault();
+    const pinInput = document.getElementById('admin-pin-input');
+    const enteredPin = pinInput ? pinInput.value.trim() : '';
+
+    if (enteredPin === ADMIN_CONFIG.defaultPin || enteredPin === 'ieslasencinas') {
+        AppState.isAdmin = true;
+        localStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, 'true');
+        closeAdminLoginModal();
+        updateAdminUiState();
+        renderAnnouncements();
+        showToast('¡Sesión de Administrador iniciada! Ya puedes borrar y publicar anuncios.', 'success');
+    } else {
+        alert('PIN incorrecto. El PIN configurado por defecto es: ' + ADMIN_CONFIG.defaultPin);
+    }
+}
+
+function logoutAdmin() {
+    if (confirm('¿Deseas cerrar la sesión de administrador?')) {
+        AppState.isAdmin = false;
+        localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+        updateAdminUiState();
+        renderAnnouncements();
+        showToast('Sesión de administrador cerrada', 'info');
+    }
+}
+
+function toggleAdminAccess() {
+    if (AppState.isAdmin) {
+        logoutAdmin();
+    } else {
+        openAdminLoginModal();
+    }
+}
+
+/* ==========================================================================
+   MODAL DE PUBLICACIÓN (ALUMNOS Y ADMIN)
+   ========================================================================== */
+
+let isPublishingAsAdmin = false;
+
+function openPublishModal(asAdmin = false) {
+    isPublishingAsAdmin = asAdmin;
+    const modal = document.getElementById('publish-modal');
+    const titleEl = document.getElementById('publish-modal-title');
+    const indicatorEl = document.getElementById('admin-publish-indicator');
+    const authorInput = document.getElementById('post-author');
+    const submitBtn = document.getElementById('btn-submit-publish');
+
+    if (modal) {
+        if (asAdmin) {
+            if (titleEl) titleEl.textContent = '👑 Publicar Anuncio Oficial (Dueño)';
+            if (indicatorEl) indicatorEl.style.display = 'block';
+            if (authorInput) authorInput.value = `${ADMIN_CONFIG.ownerName} (Prof./Admin)`;
+            if (submitBtn) submitBtn.innerHTML = '<span>🚀</span> Publicar como Oficial';
+        } else {
+            if (titleEl) titleEl.textContent = '📢 Compartir Recurso o Enlace Útil';
+            if (indicatorEl) indicatorEl.style.display = 'none';
+            if (authorInput) authorInput.value = '';
+            if (submitBtn) submitBtn.innerHTML = '<span>🚀</span> Publicar Recurso';
+        }
+
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -889,7 +1145,7 @@ function handlePublishSubmit(e) {
 
     const title = document.getElementById('post-title').value.trim();
     const category = document.getElementById('post-category').value;
-    const author = document.getElementById('post-author').value.trim() || 'Compañero/a de 1º DAM';
+    const author = document.getElementById('post-author').value.trim() || (isPublishingAsAdmin ? ADMIN_CONFIG.ownerName : 'Compañero/a de 1º DAM');
     const link = document.getElementById('post-link').value.trim();
     const description = document.getElementById('post-description').value.trim();
 
@@ -899,28 +1155,31 @@ function handlePublishSubmit(e) {
     }
 
     const newPost = {
-        id: 'user-post-' + Date.now(),
+        id: (isPublishingAsAdmin ? 'admin-post-' : 'user-post-') + Date.now(),
         title,
         category,
         author,
         link,
         linkText: link ? 'Abrir Enlace de Descarga' : '',
         description,
-        badge: 'Compañero/a',
+        badge: isPublishingAsAdmin ? 'Oficial' : 'Aporte de Clase',
         date: new Date().toISOString().slice(0, 10)
     };
 
-    AppState.communityPosts.unshift(newPost);
-    saveCommunityPosts();
+    if (isPublishingAsAdmin) {
+        AppState.officialCustomPosts.unshift(newPost);
+        saveOfficialCustomPosts();
+        showToast('¡Anuncio oficial publicado en el tablón!', 'success');
+    } else {
+        AppState.communityPosts.unshift(newPost);
+        saveCommunityPosts();
+        showToast('¡Aporte publicado en tu navegador!', 'success');
+    }
+
     closePublishModal();
     renderAnnouncements();
-    showToast('¡Aporte publicado con éxito en tu navegador!', 'success');
 }
 
-/**
- * Genera una plantilla para que los compañeros puedan enviar sus aportes directamente
- * al creador (por ejemplo, vía issue de GitHub o mensaje)
- */
 function prepareContributionForCreator() {
     const title = document.getElementById('post-title').value.trim();
     const category = document.getElementById('post-category').value;
@@ -971,8 +1230,27 @@ function showToast(message, type = 'info') {
 function initEventListeners() {
     // Theme toggle
     const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-        themeBtn.addEventListener('click', toggleTheme);
+    if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
+    // Botón de acceso de Administrador en el header
+    const adminToggleBtn = document.getElementById('btn-admin-toggle');
+    if (adminToggleBtn) adminToggleBtn.addEventListener('click', toggleAdminAccess);
+
+    // Formulario de login de Administrador
+    const adminLoginForm = document.getElementById('admin-login-form');
+    if (adminLoginForm) adminLoginForm.addEventListener('submit', handleAdminLoginSubmit);
+
+    const btnCloseAdminModal = document.getElementById('btn-close-admin-modal');
+    if (btnCloseAdminModal) btnCloseAdminModal.addEventListener('click', closeAdminLoginModal);
+
+    const btnCancelAdminModal = document.getElementById('btn-cancel-admin-modal');
+    if (btnCancelAdminModal) btnCancelAdminModal.addEventListener('click', closeAdminLoginModal);
+
+    const adminModalBackdrop = document.getElementById('admin-login-modal');
+    if (adminModalBackdrop) {
+        adminModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === adminModalBackdrop) closeAdminLoginModal();
+        });
     }
 
     // Botones de la calculadora
@@ -1024,7 +1302,11 @@ function initEventListeners() {
 
     // Modal de publicación
     const openModalBtn = document.getElementById('btn-open-publish-modal');
-    if (openModalBtn) openModalBtn.addEventListener('click', openPublishModal);
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', () => {
+            openPublishModal(AppState.isAdmin);
+        });
+    }
 
     const closeModalBtn = document.getElementById('btn-close-modal');
     if (closeModalBtn) closeModalBtn.addEventListener('click', closePublishModal);

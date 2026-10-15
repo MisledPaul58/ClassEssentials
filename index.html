@@ -59,6 +59,11 @@
             </nav>
 
             <div class="header-actions">
+                <button class="btn-admin-access" id="btn-admin-toggle" title="Acceso de gestión para el dueño de la web">
+                    <span id="admin-toggle-icon">🔒</span>
+                    <span id="admin-toggle-text">Acceso Admin</span>
+                </button>
+
                 <button class="theme-toggle-btn" id="theme-toggle-btn" title="Alternar tema oscuro / claro" aria-label="Alternar tema">
                     <span id="theme-icon">☀️</span>
                 </button>
@@ -123,182 +128,236 @@
             </div>
         </section>
 
+        <!-- Separador Visual 1 -->
+        <div class="section-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <span class="divider-icon">📊 MÓDULO 01 • ASISTENCIA</span>
+            <span class="divider-line"></span>
+        </div>
+
         <!-- SECCIÓN 1: CALCULADORA DE FALTAS -->
         <section id="calculadora" class="app-section">
             <div class="container">
-                <div class="section-header">
-                    <div class="section-title-group">
-                        <h2 class="section-title">
-                            <span>📊</span> Calculadora de Faltas y Asistencia
-                        </h2>
-                        <p class="section-subtitle">
-                            Calcula de forma visual cuánto te falta para superar los límites legales en cada módulo o en la matrícula global.
-                        </p>
+                <div class="section-wrapper">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <span class="section-kicker">CONTROL DE ASISTENCIA</span>
+                            <h2 class="section-title">
+                                <span>📊</span> Calculadora de Faltas y Matrícula
+                            </h2>
+                            <p class="section-subtitle">
+                                Comprueba de forma visual tu distancia a los límites legales de evaluación continua en cada módulo y de pérdida global de matrícula.
+                            </p>
+                        </div>
+
+                        <div class="calc-actions">
+                            <button class="btn btn-secondary btn-sm" id="btn-print-report" title="Imprimir informe en papel o guardar como PDF">
+                                <span>🖨️</span> Imprimir Informe
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="btn-export-json" title="Descargar copia de seguridad de tus faltas">
+                                <span>💾</span> Exportar JSON
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="btn-import-json" title="Cargar copia de seguridad anterior">
+                                <span>📂</span> Importar JSON
+                            </button>
+                            <button class="btn btn-danger-outline btn-sm" id="btn-reset-absences" title="Poner a cero todos los contadores de faltas">
+                                <span>🔄</span> Reiniciar Todo
+                            </button>
+                            <input type="file" id="json-file-input" accept=".json" style="display: none;" />
+                        </div>
                     </div>
 
-                    <div class="calc-actions">
-                        <button class="btn btn-secondary btn-sm" id="btn-print-report" title="Imprimir informe en papel o guardar como PDF">
-                            <span>🖨️</span> Imprimir Informe
-                        </button>
-                        <button class="btn btn-secondary btn-sm" id="btn-export-json" title="Descargar copia de seguridad de tus faltas">
-                            <span>💾</span> Exportar JSON
-                        </button>
-                        <button class="btn btn-secondary btn-sm" id="btn-import-json" title="Cargar copia de seguridad anterior">
-                            <span>📂</span> Importar JSON
-                        </button>
-                        <button class="btn btn-danger-outline btn-sm" id="btn-reset-absences" title="Poner a cero todos los contadores de faltas">
-                            <span>🔄</span> Reiniciar Todo
-                        </button>
-                        <input type="file" id="json-file-input" accept=".json" style="display: none;" />
-                    </div>
-                </div>
+                    <!-- Resumen Global de Pérdida de Matrícula -->
+                    <div id="matricula-summary-wrap"></div>
 
-                <!-- Resumen Global de Pérdida de Matrícula -->
-                <div id="matricula-summary-wrap"></div>
-
-                <!-- Barra de aviso de reglas -->
-                <div class="calc-controls-bar">
-                    <div class="calc-filter-info">
-                        <span>ℹ️</span>
-                        <span><strong>Regla de Evaluación Continua:</strong> Cuentan <em>todas</em> las faltas (<strong>Justificadas + Injustificadas</strong>). Los datos se guardan solos en tu navegador.</span>
+                    <!-- Barra de aviso de reglas -->
+                    <div class="calc-controls-bar">
+                        <div class="calc-filter-info">
+                            <span>ℹ️</span>
+                            <span><strong>Regla de Evaluación Continua:</strong> Cuentan <em>todas</em> las faltas (<strong>Justificadas + Injustificadas</strong>). Los datos se guardan en tu navegador.</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            <span>💾 Guardado automático activo</span>
+                        </div>
                     </div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted);">
-                        <span>💾 Guardado automático activo</span>
-                    </div>
-                </div>
 
-                <!-- Cuadrícula de Módulos (7 Asignaturas) -->
-                <div class="modules-grid" id="modules-grid">
-                    <!-- Generado dinámicamente con JS -->
+                    <!-- Cuadrícula de Módulos (7 Asignaturas) -->
+                    <div class="modules-grid" id="modules-grid">
+                        <!-- Generado dinámicamente con JS -->
+                    </div>
                 </div>
             </div>
         </section>
+
+        <!-- Separador Visual 2 -->
+        <div class="section-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <span class="divider-icon">📅 MÓDULO 02 • CALENDARIO & EXÁMENES</span>
+            <span class="divider-line"></span>
+        </div>
 
         <!-- SECCIÓN 2: CALENDARIO ESCOLAR, FESTIVOS Y HITOS -->
-        <section id="calendario" class="app-section" style="background: rgba(0, 0, 0, 0.15);">
+        <section id="calendario" class="app-section">
             <div class="container">
-                <div class="section-header">
-                    <div class="section-title-group">
-                        <h2 class="section-title">
-                            <span>📅</span> Calendario Escolar y Próximos Festivos
-                        </h2>
-                        <p class="section-subtitle">
-                            Días no lectivos, semanas de exámenes oficiales y fechas de entrega de notas para el curso 2026-2027 en el IES Las Encinas.
-                        </p>
+                <div class="section-wrapper">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <span class="section-kicker">CURSO ESCOLAR 2026-2027</span>
+                            <h2 class="section-title">
+                                <span>📅</span> Calendario de Festivos y Exámenes
+                            </h2>
+                            <p class="section-subtitle">
+                                Días no lectivos, semanas de exámenes oficiales y fechas de entrega de notas para 1º DAM en el IES Las Encinas.
+                            </p>
+                        </div>
+
+                        <!-- Filtros -->
+                        <div class="calendar-filters">
+                            <button class="filter-chip active" data-filter="all">Todos los eventos</button>
+                            <button class="filter-chip" data-filter="upcoming">Próximos</button>
+                            <button class="filter-chip" data-filter="holidays">Solo Festivos</button>
+                            <button class="filter-chip" data-filter="exams">Exámenes y Notas</button>
+                        </div>
                     </div>
 
-                    <!-- Filtros -->
-                    <div class="calendar-filters">
-                        <button class="filter-chip active" data-filter="all">Todos los eventos</button>
-                        <button class="filter-chip" data-filter="upcoming">Próximos</button>
-                        <button class="filter-chip" data-filter="holidays">Solo Festivos</button>
-                        <button class="filter-chip" data-filter="exams">Exámenes y Notas</button>
+                    <!-- Banner Hero del Próximo Festivo -->
+                    <div id="upcoming-holiday-banner-wrap"></div>
+
+                    <!-- Línea de Tiempo de Eventos -->
+                    <div class="calendar-timeline" id="calendar-timeline">
+                        <!-- Generado dinámicamente con JS -->
                     </div>
-                </div>
-
-                <!-- Banner Hero del Próximo Festivo -->
-                <div id="upcoming-holiday-banner-wrap"></div>
-
-                <!-- Línea de Tiempo de Eventos -->
-                <div class="calendar-timeline" id="calendar-timeline">
-                    <!-- Generado dinámicamente con JS -->
                 </div>
             </div>
         </section>
+
+        <!-- Separador Visual 3 -->
+        <div class="section-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <span class="divider-icon">📢 MÓDULO 03 • TABLÓN & RECURSOS</span>
+            <span class="divider-line"></span>
+        </div>
 
         <!-- SECCIÓN 3: TABLÓN DE ANUNCIOS Y RECURSOS (PORTABLES) -->
         <section id="recursos" class="app-section">
             <div class="container">
-                <div class="section-header">
-                    <div class="section-title-group">
-                        <h2 class="section-title">
-                            <span>📢</span> Tablón de Anuncios y Recursos para DAM
-                        </h2>
-                        <p class="section-subtitle">
-                            Enlaces directos a software portable sin instalación para los ordenadores del centro, apuntes, chuletas y recursos útiles para el curso.
-                        </p>
+                <div class="section-wrapper">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <span class="section-kicker">MATERIALES Y AVISOS</span>
+                            <h2 class="section-title">
+                                <span>📢</span> Tablón de Anuncios y Recursos para DAM
+                            </h2>
+                            <p class="section-subtitle">
+                                Enlaces directos a software portable sin instalación para los ordenadores del aula, apuntes y recursos aportados por la clase.
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-primary" id="btn-open-publish-modal">
+                                <span>➕</span> Publicar / Compartir Recurso
+                            </button>
+                        </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.75rem; align-items: center;">
-                        <button class="btn btn-primary" id="btn-open-publish-modal">
-                            <span>➕</span> Publicar / Compartir Recurso
-                        </button>
-                    </div>
-                </div>
+                    <!-- Banner Dinámico del Modo Administrador (Se muestra solo si el dueño ha iniciado sesión) -->
+                    <div id="admin-toolbar-wrap"></div>
 
-                <!-- Barra de búsqueda y categorías -->
-                <div class="announcements-toolbar">
-                    <div class="search-input-wrap">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="resource-search-input" placeholder="Buscar por herramienta, asignatura, autor..." />
+                    <!-- Barra de búsqueda y categorías -->
+                    <div class="announcements-toolbar">
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="resource-search-input" placeholder="Buscar por herramienta, asignatura, autor..." />
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <label for="resource-category-filter" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Categoría:</label>
+                            <select id="resource-category-filter" class="form-select" style="width: auto; padding: 0.45rem 0.8rem; font-size: 0.85rem;">
+                                <option value="all">Todas las categorías</option>
+                                <option value="Software Portable">Software Portable</option>
+                                <option value="Guías y Chuletas">Guías y Chuletas</option>
+                                <option value="Aviso">Avisos</option>
+                                <option value="Comunidad">Aportes de Compañeros</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <label for="resource-category-filter" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Categoría:</label>
-                        <select id="resource-category-filter" class="form-select" style="width: auto; padding: 0.45rem 0.8rem; font-size: 0.85rem;">
-                            <option value="all">Todas las categorías</option>
-                            <option value="Software Portable">Software Portable</option>
-                            <option value="Guías y Chuletas">Guías y Chuletas</option>
-                            <option value="Aviso">Avisos</option>
-                            <option value="Comunidad">Aportes de Compañeros</option>
-                        </select>
+                    <!-- Cuadrícula de Recursos -->
+                    <div class="resources-grid" id="resources-grid">
+                        <!-- Generado dinámicamente con JS -->
                     </div>
-                </div>
 
-                <!-- Cuadrícula de Recursos -->
-                <div class="resources-grid" id="resources-grid">
-                    <!-- Generado dinámicamente con JS -->
+                    <!-- Caja explicativa de cómo funciona la visibilidad compartida -->
+                    <div class="shared-visibility-info">
+                        <span style="font-size: 1.4rem;">💡</span>
+                        <div>
+                            <strong>¿Cómo ven los demás compañeros lo que se publica aquí?</strong>
+                            <p style="margin-top: 0.25rem;">
+                                Al tratarse de una web en GitHub Pages (sin servidor de base de datos de pago), los aportes que envías desde el formulario se guardan instantáneamente en tu dispositivo. Para que un recurso pase a ser <strong>oficial y visible para toda la clase en la web pública</strong>, pulsa en <em>"📋 Copiar plantilla para el dueño"</em> al publicar para hacérselo llegar al creador, quien lo validará desde su <strong>Modo Administrador</strong>.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- Separador Visual 4 -->
+        <div class="section-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <span class="divider-icon">ℹ️ MÓDULO 04 • GUÍA LEGAL</span>
+            <span class="divider-line"></span>
+        </div>
+
         <!-- SECCIÓN 4: NORMATIVA DE ASISTENCIA Y PREGUNTAS FRECUENTES -->
-        <section id="normativa" class="app-section" style="background: rgba(0, 0, 0, 0.15);">
+        <section id="normativa" class="app-section">
             <div class="container">
-                <div class="section-header">
-                    <div class="section-title-group">
-                        <h2 class="section-title">
-                            <span>ℹ️</span> Normativa Oficial de Asistencia en FP
-                        </h2>
-                        <p class="section-subtitle">
-                            Entiende cómo se calcula la pérdida de evaluación continua y de matrícula según la legislación educativa vigente.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="normativa-grid">
-                    <div class="normativa-card">
-                        <h3>📌 Pérdida de Evaluación Continua</h3>
-                        <p>
-                            La evaluación continua es <strong>individual e independiente por cada módulo o asignatura</strong>.
-                        </p>
-                        <ul>
-                            <li><strong>¿Qué faltas cuentan?</strong> Cuentan <strong>tanto las justificadas como las injustificadas</strong>. Si superas el límite, se pierde el derecho al sistema continuo y deberás presentarte a la prueba final ordinaria o extraordinaria.</li>
-                            <li><strong>¿Cuáles son los porcentajes?</strong> Según el módulo, oscila entre el <strong>15%</strong> (Bases de Datos, Lenguajes de Marcas, IPE I) y el <strong>30%</strong> (Programación, Entornos de Desarrollo, Sistemas Informáticos, Ampliación).</li>
-                        </ul>
+                <div class="section-wrapper">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <span class="section-kicker">INFORMACIÓN NORMATIVA</span>
+                            <h2 class="section-title">
+                                <span>ℹ️</span> Normativa Oficial de Asistencia en FP
+                            </h2>
+                            <p class="section-subtitle">
+                                Entiende la diferencia legal entre la pérdida de evaluación continua y la anulación de matrícula en Formación Profesional.
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="normativa-card">
-                        <h3>🎓 Pérdida de Matrícula</h3>
-                        <p>
-                            La anulación o pérdida de matrícula es una medida administrativa <strong>global</strong> que afecta a todo el curso.
-                        </p>
-                        <ul>
-                            <li><strong>¿Qué faltas cuentan?</strong> Se produce cuando el alumno falta de forma <strong>injustificada al 15% de las horas totales</strong>. En este cómputo <em>no</em> se suman las faltas debidamente justificadas mediante justificante médico o laboral oficial.</li>
-                            <li><strong>Límite en 1º DAM:</strong> 1º de DAM tiene exactamente <strong>1.000 horas lectivas</strong>, por lo que el 15% equivale a <strong>150 faltas injustificadas</strong>.</li>
-                        </ul>
-                    </div>
+                    <div class="normativa-grid">
+                        <div class="normativa-card">
+                            <h3>📌 Pérdida de Evaluación Continua</h3>
+                            <p>
+                                La evaluación continua es <strong>individual e independiente por cada módulo o asignatura</strong>.
+                            </p>
+                            <ul>
+                                <li><strong>¿Qué faltas cuentan?</strong> Cuentan <strong>tanto las justificadas como las injustificadas</strong>. Si superas el límite, se pierde el derecho al sistema continuo y deberás presentarte a la prueba final ordinaria o extraordinaria.</li>
+                                <li><strong>¿Cuáles son los porcentajes?</strong> Según el módulo, oscila entre el <strong>15%</strong> (Bases de Datos, Lenguajes de Marcas, IPE I) y el <strong>30%</strong> (Programación, Entornos de Desarrollo, Sistemas Informáticos, Ampliación).</li>
+                            </ul>
+                        </div>
 
-                    <div class="normativa-card">
-                        <h3>🔒 Privacidad y Almacenamiento Local</h3>
-                        <p>
-                            ClassEssentials funciona de forma <strong>100% privada</strong>.
-                        </p>
-                        <ul>
-                            <li>Ningún profesor, alumno ni tercero puede ver cuántas faltas llevas registradas.</li>
-                            <li>Tus datos se guardan única y exclusivamente en el almacenamiento interno de tu navegador (<code>localStorage</code>).</li>
-                            <li>Puedes exportar tus datos en JSON para tener una copia de respaldo o sincronizarlos con otros dispositivos.</li>
-                        </ul>
+                        <div class="normativa-card">
+                            <h3>🎓 Pérdida de Matrícula</h3>
+                            <p>
+                                La anulación o pérdida de matrícula es una medida administrativa <strong>global</strong> que afecta a todo el curso.
+                            </p>
+                            <ul>
+                                <li><strong>¿Qué faltas cuentan?</strong> Se produce cuando el alumno falta de forma <strong>injustificada al 15% de las horas totales</strong>. En este cómputo <em>no</em> se suman las faltas debidamente justificadas mediante justificante oficial.</li>
+                                <li><strong>Límite en 1º DAM:</strong> 1º de DAM tiene exactamente <strong>1.000 horas lectivas</strong>, por lo que el 15% equivale a <strong>150 faltas injustificadas</strong>.</li>
+                            </ul>
+                        </div>
+
+                        <div class="normativa-card">
+                            <h3>🔒 Privacidad y Almacenamiento Local</h3>
+                            <p>
+                                ClassEssentials funciona de forma <strong>100% privada</strong>.
+                            </p>
+                            <ul>
+                                <li>Ningún profesor, alumno ni tercero puede ver cuántas faltas llevas registradas.</li>
+                                <li>Tus datos se guardan única y exclusivamente en el almacenamiento interno de tu navegador (<code>localStorage</code>).</li>
+                                <li>Puedes exportar tus datos en JSON para tener una copia de respaldo o sincronizarlos con otros dispositivos.</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -310,12 +369,16 @@
     <div class="modal-backdrop" id="publish-modal" aria-hidden="true" role="dialog">
         <div class="modal-container">
             <div class="modal-header">
-                <h3 class="modal-title">📢 Compartir Recurso o Enlace Útil</h3>
+                <h3 class="modal-title" id="publish-modal-title">📢 Compartir Recurso o Enlace Útil</h3>
                 <button class="modal-close-btn" id="btn-close-modal" aria-label="Cerrar ventana">×</button>
             </div>
 
             <form id="publish-form">
                 <div class="modal-body">
+                    <div id="admin-publish-indicator" style="display: none; padding: 0.5rem 0.75rem; background: rgba(234, 88, 12, 0.15); border: 1px solid rgba(234, 88, 12, 0.4); border-radius: var(--radius-sm); font-size: 0.8rem; color: #fdba74; font-weight: 600;">
+                        👑 Publicando con permisos de Administrador Oficial (IES Las Encinas)
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label" for="post-title">Título del Recurso / Herramienta *</label>
                         <input type="text" id="post-title" class="form-input" placeholder="Ej: Eclipse Portable 2026, Chuleta de Expresiones Regulares..." required />
@@ -334,7 +397,7 @@
 
                     <div class="form-group">
                         <label class="form-label" for="post-author">Tu Nombre o Alias (Autor)</label>
-                        <input type="text" id="post-author" class="form-input" placeholder="Ej: Carlos G., Alumno 1º DAM" />
+                        <input type="text" id="post-author" class="form-input" placeholder="Ej: MisledPaul58 / Alumno 1º DAM" />
                     </div>
 
                     <div class="form-group">
@@ -352,9 +415,35 @@
                     <button type="button" class="btn btn-secondary" id="btn-share-creator" title="Copia la plantilla para enviársela al dueño de la web y añadirla de forma fija">
                         📋 Copiar plantilla para el dueño
                     </button>
-                    <button type="submit" class="btn btn-primary">
-                        <span>🚀</span> Publicar en mi Tablón
+                    <button type="submit" class="btn btn-primary" id="btn-submit-publish">
+                        <span>🚀</span> Publicar Recurso
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Inicio de Sesión de Administrador -->
+    <div class="modal-backdrop" id="admin-login-modal" aria-hidden="true" role="dialog">
+        <div class="modal-container" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title">👑 Modo Administrador (Dueño)</h3>
+                <button class="modal-close-btn" id="btn-close-admin-modal" aria-label="Cerrar">×</button>
+            </div>
+            <form id="admin-login-form">
+                <div class="modal-body">
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                        Introduce el PIN de seguridad para activar los controles del dueño. Podrás <strong>borrar anuncios</strong> con un solo clic, añadir anuncios oficiales y gestionar el tablón.
+                    </p>
+                    <div class="form-group" style="margin-top: 0.75rem;">
+                        <label class="form-label" for="admin-pin-input">PIN de Administrador:</label>
+                        <input type="password" id="admin-pin-input" class="form-input" placeholder="Introduce el PIN (por defecto: dam2026)" required autocomplete="current-password" />
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">PIN configurado: <code>dam2026</code></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-admin-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><span>🔓</span> Iniciar Sesión</button>
                 </div>
             </form>
         </div>

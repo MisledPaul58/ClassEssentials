@@ -16,6 +16,12 @@ export const ACADEMIC_INFO = {
     matriculaPercentage: 15
 };
 
+export const ADMIN_CONFIG = {
+    ownerName: "MisledPaul58",
+    defaultPin: "dam2026",
+    githubRepo: "MisledPaul58/ClassEssentials"
+};
+
 /**
  * Módulos oficiales de 1º DAM con sus horas y límites de faltas para pérdida de evaluación continua.
  * REGLA: Cuentan tanto faltas JUSTIFICADAS como INJUSTIFICADAS (J + I).

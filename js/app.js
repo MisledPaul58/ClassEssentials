@@ -845,6 +845,8 @@ function renderAnnouncements() {
                 const res = await CloudDB.deleteAnnouncement(postId);
                 if (res.success) {
                     showToast('Anuncio eliminado de la base de datos', 'success');
+                } else {
+                    showToast('Error al borrar: ' + (res.error || 'Comprueba los permisos de Firestore'), 'error');
                 }
             }
         });

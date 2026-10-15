@@ -226,13 +226,15 @@ class CloudDatabaseService {
             try {
                 const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
                 await deleteDoc(doc(this.db, "announcements", postId));
+                // El onSnapshot actualizará la UI automáticamente
                 return { success: true, inCloud: true };
             } catch (err) {
                 console.error("Error al eliminar documento en Firestore:", err);
+                return { success: false, inCloud: true, error: err.message };
             }
         }
 
-        // Respaldo local
+        // Respaldo local (sin conexión a Firebase)
         this.announcements = this.announcements.filter(p => p.id !== postId);
         this.saveLocalCache(this.announcements);
         this.notifySubscribers();

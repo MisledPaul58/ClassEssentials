@@ -17,19 +17,26 @@
     <!-- Favicon SVG -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><path d='M30 70 L50 25 L70 70 L50 55 Z' fill='white'/></svg>">
 
-    <!-- Estilos CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Estilos CSS con Cache-Buster para forzar actualización inmediata -->
+    <link rel="stylesheet" href="css/style.css?v=2.2.0">
 </head>
 <body>
 
     <!-- Malla de gradiente de fondo -->
     <div class="bg-mesh" aria-hidden="true"></div>
 
+    <!-- Insignia Flotante Secreta del Dueño (Visible solo cuando el dueño inicia sesión) -->
+    <div id="owner-floating-badge" class="owner-floating-pill" style="display: none;">
+        <span>👑 Modo Dueño Activo</span>
+        <button id="btn-owner-logout-pill" class="btn-owner-pill-logout" title="Cerrar sesión de administrador">Cerrar Sesión</button>
+    </div>
+
     <!-- Encabezado y Barra de Navegación -->
     <header class="site-header">
         <div class="header-container container">
             <a href="#" class="brand" title="Ir al inicio de ClassEssentials">
-                <div class="brand-icon" aria-hidden="true">📚</div>
+                <!-- El icono tiene un disparador secreto con triple-clic para el dueño -->
+                <div class="brand-icon secret-trigger" id="secret-logo-trigger" aria-hidden="true" title="ClassEssentials - 1º DAM">📚</div>
                 <div class="brand-text">
                     <span class="brand-title">ClassEssentials</span>
                     <span class="brand-subtitle">
@@ -59,11 +66,7 @@
             </nav>
 
             <div class="header-actions">
-                <button class="btn-admin-access" id="btn-admin-toggle" title="Acceso de gestión para el dueño de la web">
-                    <span id="admin-toggle-icon">🔒</span>
-                    <span id="admin-toggle-text">Acceso Admin</span>
-                </button>
-
+                <!-- Sin botón de admin visible para el resto de alumnos -->
                 <button class="theme-toggle-btn" id="theme-toggle-btn" title="Alternar tema oscuro / claro" aria-label="Alternar tema">
                     <span id="theme-icon">☀️</span>
                 </button>
@@ -238,7 +241,7 @@
             <span class="divider-line"></span>
         </div>
 
-        <!-- SECCIÓN 3: TABLÓN DE ANUNCIOS Y RECURSOS (PORTABLES) -->
+        <!-- SECCIÓN 3: TABLÓN DE ANUNCIOS Y RECURSOS (BASE DE DATOS COMPARTIDA) -->
         <section id="recursos" class="app-section">
             <div class="container">
                 <div class="section-wrapper">
@@ -246,21 +249,24 @@
                         <div class="section-title-group">
                             <span class="section-kicker">MATERIALES Y AVISOS</span>
                             <h2 class="section-title">
-                                <span>📢</span> Tablón de Anuncios y Recursos para DAM
+                                <span>📢</span> Tablón de Recursos para 1º DAM
                             </h2>
                             <p class="section-subtitle">
-                                Enlaces directos a software portable sin instalación para los ordenadores del aula, apuntes y recursos aportados por la clase.
+                                Enlaces directos a software portable sin instalación para los ordenadores del aula, apuntes y recursos sincronizados en la base de datos de la clase.
                             </p>
                         </div>
 
                         <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                            <span id="db-connection-status" class="db-status-badge fallback">
+                                <span>☁️</span> <span id="db-status-text">Base de Datos Activa</span>
+                            </span>
                             <button class="btn btn-primary" id="btn-open-publish-modal">
                                 <span>➕</span> Publicar / Compartir Recurso
                             </button>
                         </div>
                     </div>
 
-                    <!-- Banner Dinámico del Modo Administrador (Se muestra solo si el dueño ha iniciado sesión) -->
+                    <!-- Banner del Modo Administrador (Visible SOLO si el dueño inicia sesión con su clave secreta) -->
                     <div id="admin-toolbar-wrap"></div>
 
                     <!-- Barra de búsqueda y categorías -->
@@ -277,23 +283,23 @@
                                 <option value="Software Portable">Software Portable</option>
                                 <option value="Guías y Chuletas">Guías y Chuletas</option>
                                 <option value="Aviso">Avisos</option>
-                                <option value="Comunidad">Aportes de Compañeros</option>
+                                <option value="Comunidad">Aportes de la Clase</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Cuadrícula de Recursos -->
                     <div class="resources-grid" id="resources-grid">
-                        <!-- Generado dinámicamente con JS -->
+                        <!-- Generado dinámicamente con JS y la Base de Datos -->
                     </div>
 
                     <!-- Caja explicativa de cómo funciona la visibilidad compartida -->
                     <div class="shared-visibility-info">
                         <span style="font-size: 1.4rem;">💡</span>
                         <div>
-                            <strong>¿Cómo ven los demás compañeros lo que se publica aquí?</strong>
+                            <strong>Tablón conectado y colaborativo</strong>
                             <p style="margin-top: 0.25rem;">
-                                Al tratarse de una web en GitHub Pages (sin servidor de base de datos de pago), los aportes que envías desde el formulario se guardan instantáneamente en tu dispositivo. Para que un recurso pase a ser <strong>oficial y visible para toda la clase en la web pública</strong>, pulsa en <em>"📋 Copiar plantilla para el dueño"</em> al publicar para hacérselo llegar al creador, quien lo validará desde su <strong>Modo Administrador</strong>.
+                                Los recursos compartidos aquí quedan registrados para que tus compañeros puedan encontrarlos y utilizarlos en las prácticas. El dueño de la web gestiona y supervisa las herramientas publicadas para mantener un espacio útil y académico.
                             </p>
                         </div>
                     </div>
@@ -354,7 +360,7 @@
                             </p>
                             <ul>
                                 <li>Ningún profesor, alumno ni tercero puede ver cuántas faltas llevas registradas.</li>
-                                <li>Tus datos se guardan única y exclusivamente en el almacenamiento interno de tu navegador (<code>localStorage</code>).</li>
+                                <li>Tus datos de asistencia se guardan única y exclusivamente en el almacenamiento interno de tu navegador (<code>localStorage</code>).</li>
                                 <li>Puedes exportar tus datos en JSON para tener una copia de respaldo o sincronizarlos con otros dispositivos.</li>
                             </ul>
                         </div>
@@ -423,27 +429,64 @@
         </div>
     </div>
 
-    <!-- Modal de Inicio de Sesión de Administrador -->
+    <!-- Modal Secreto de Inicio de Sesión de Administrador -->
     <div class="modal-backdrop" id="admin-login-modal" aria-hidden="true" role="dialog">
         <div class="modal-container" style="max-width: 440px;">
             <div class="modal-header">
-                <h3 class="modal-title">👑 Modo Administrador (Dueño)</h3>
+                <h3 class="modal-title">👑 Acceso de Gestión del Dueño</h3>
                 <button class="modal-close-btn" id="btn-close-admin-modal" aria-label="Cerrar">×</button>
             </div>
             <form id="admin-login-form">
                 <div class="modal-body">
                     <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
-                        Introduce el PIN de seguridad para activar los controles del dueño. Podrás <strong>borrar anuncios</strong> con un solo clic, añadir anuncios oficiales y gestionar el tablón.
+                        Introduce tu PIN de administrador para activar la gestión del tablón. Podrás <strong>borrar anuncios</strong> con 1 clic, publicar anuncios oficiales y conectar la base de datos.
                     </p>
                     <div class="form-group" style="margin-top: 0.75rem;">
                         <label class="form-label" for="admin-pin-input">PIN de Administrador:</label>
-                        <input type="password" id="admin-pin-input" class="form-input" placeholder="Introduce el PIN (por defecto: dam2026)" required autocomplete="current-password" />
-                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">PIN configurado: <code>dam2026</code></span>
+                        <input type="password" id="admin-pin-input" class="form-input" placeholder="Introduce el PIN de seguridad" required autocomplete="current-password" />
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">PIN por defecto: <code>dam2026</code></span>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-admin-modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><span>🔓</span> Iniciar Sesión</button>
+                    <button type="submit" class="btn btn-primary"><span>🔓</span> Acceder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Configuración de Base de Datos en la Nube (Firebase) -->
+    <div class="modal-backdrop" id="db-config-modal" aria-hidden="true" role="dialog">
+        <div class="modal-container" style="max-width: 540px;">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ Conectar Base de Datos en la Nube (Firebase)</h3>
+                <button class="modal-close-btn" id="btn-close-db-modal" aria-label="Cerrar">×</button>
+            </div>
+            <form id="db-config-form">
+                <div class="modal-body">
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                        Conecta una base de datos gratuita de <strong>Firebase Firestore (Google)</strong> para sincronizar en tiempo real el tablón entre todos los compañeros de 1º DAM:
+                    </p>
+                    <div style="background: var(--bg-card); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.5rem;">
+                        1. Ve a <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; font-weight: bold;">console.firebase.google.com</a> (gratis con tu cuenta de Google).<br>
+                        2. Crea un proyecto (ej: <code>classessentials-dam</code>) y activa <strong>Firestore Database</strong> en modo prueba.<br>
+                        3. Añade una aplicación Web y copia el objeto <code>firebaseConfig</code>.
+                    </div>
+                    <div class="form-group" style="margin-top: 0.75rem;">
+                        <label class="form-label" for="firebase-config-input">Pega aquí el objeto de configuración Firebase (JSON):</label>
+                        <textarea id="firebase-config-input" class="form-textarea" style="font-family: var(--font-mono); font-size: 0.8rem; min-height: 110px;" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "tu-proyecto.firebaseapp.com",
+  "projectId": "tu-proyecto",
+  "storageBucket": "tu-proyecto.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-db-modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary"><span>💾</span> Guardar y Conectar Base de Datos</button>
                 </div>
             </form>
         </div>
@@ -490,13 +533,13 @@
             </div>
 
             <div class="footer-bottom">
-                <span>© 2026 ClassEssentials • Creado por MisledPaul58 para 1º DAM - IES Las Encinas</span>
-                <span>Almacenamiento 100% local en cliente • Sin cookies de rastreo</span>
+                <span>© 2026 ClassEssentials <span id="secret-admin-trigger" class="secret-trigger" title="IES Las Encinas">•</span> Creado por MisledPaul58 para 1º DAM - IES Las Encinas</span>
+                <span>Almacenamiento 100% privado en cliente • Sin cookies de rastreo</span>
             </div>
         </div>
     </footer>
 
-    <!-- Script Principal como Módulo ES6 -->
-    <script type="module" src="js/app.js"></script>
+    <!-- Script Principal como Módulo ES6 con Cache-Buster -->
+    <script type="module" src="js/app.js?v=2.2.0"></script>
 </body>
 </html>

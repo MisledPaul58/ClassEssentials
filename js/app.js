@@ -1077,12 +1077,8 @@ async function handleDbConfigSubmit(e) {
         closeDbConfigModal();
         showToast('Guardando configuración y conectando a Firebase...', 'info');
 
-        await CloudDB.init((posts, isCloud) => {
-            AppState.announcements = posts;
-            AppState.isCloudConnected = isCloud;
-            updateDatabaseStatusBadge(isCloud);
-            renderAnnouncements();
-        });
+        // Reconectar sin registrar un callback nuevo (ya está registrado desde initDatabaseConnection)
+        await CloudDB.init();
 
         showToast('¡Base de Datos conectada con éxito!', 'success');
     } catch (err) {

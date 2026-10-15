@@ -17,12 +17,19 @@ class CloudDatabaseService {
         this.db = null;
         this.subscribers = [];
         this.announcements = [];
+        this._unsubscribeSnapshot = null; // Referencia al listener activo para poder cancelarlo
     }
 
     /**
-     * Obtiene la configuración de Firebase activa (prioriza la guardada por el dueño, o la de data.js)
+     * Obtiene la configuración de Firebase activa (prioriza la de data.js, luego la guardada en localStorage)
      */
     getConfig() {
+        // Prioridad 1: config real en data.js (hardcodeada por el dueño)
+        if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.apiKey) {
+            return FIREBASE_CONFIG;
+        }
+
+        // Prioridad 2: config guardada manualmente por el dueño desde el panel admin
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.FIREBASE_CONFIG);
             if (saved) {
@@ -35,15 +42,11 @@ class CloudDatabaseService {
             console.warn("Error leyendo config de Firebase local:", e);
         }
 
-        if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.apiKey) {
-            return FIREBASE_CONFIG;
-        }
-
         return null;
     }
 
     /**
-     * Guarda la configuración de Firebase introducida por el dueño
+     * Guarda la configuración de Firebase introducida por el dueño desde el panel
      */
     saveConfig(configObj) {
         try {
@@ -56,65 +59,51 @@ class CloudDatabaseService {
     }
 
     /**
-     * Inicializa la conexión con Firebase Firestore
+     * Inicializa la conexión con Firebase Firestore.
+     * Cancela cualquier listener previo antes de crear uno nuevo (evita duplicados).
      */
     async init(onUpdateCallback) {
+        // Registrar el callback si no estaba ya
         if (onUpdateCallback && !this.subscribers.includes(onUpdateCallback)) {
             this.subscribers.push(onUpdateCallback);
         }
 
+        // CANCELAR listener anterior antes de crear uno nuevo
+        if (this._unsubscribeSnapshot) {
+            this._unsubscribeSnapshot();
+            this._unsubscribeSnapshot = null;
+        }
+
         const config = this.getConfig();
 
-        if (config && config.projectId && config.apiKey && !config.apiKey.includes("AIzaSyD-CLASS-ESSENTIALS")) {
+        if (config && config.projectId && config.apiKey) {
             try {
-                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js");
-                const { 
-                    getFirestore, 
-                    collection, 
-                    onSnapshot, 
-                    addDoc, 
-                    deleteDoc, 
-                    doc, 
-                    getDocs,
-                    serverTimestamp, 
-                    query, 
-                    orderBy 
+                const { initializeApp, getApps, getApp } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js");
+                const {
+                    getFirestore,
+                    collection,
+                    onSnapshot,
+                    query,
+                    orderBy
                 } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
 
+                // Reutilizar la app si ya fue inicializada, evitar doble initializeApp
                 let app;
-                const apps = getApps();
-                if (apps.length === 0) {
+                const existingApps = getApps();
+                if (existingApps.length === 0) {
                     app = initializeApp(config);
                 } else {
-                    app = apps[0];
+                    app = getApp();
                 }
 
                 this.db = getFirestore(app);
                 this.isCloudConnected = true;
 
-                // Consulta ordenada cronológicamente
                 const colRef = collection(this.db, "announcements");
-
-                // Sembrado inicial si la colección está vacía
-                try {
-                    const existingDocs = await getDocs(colRef);
-                    if (existingDocs.empty) {
-                        for (const item of DEFAULT_ANNOUNCEMENTS) {
-                            await addDoc(colRef, {
-                                ...item,
-                                isOfficial: true,
-                                createdAt: serverTimestamp()
-                            });
-                        }
-                    }
-                } catch (seedErr) {
-                    console.warn("Aviso al comprobar datos iniciales:", seedErr);
-                }
-
-                // Suscripción en tiempo real (WebSockets / Firestore Snapshot)
                 const q = query(colRef, orderBy("createdAt", "desc"));
-                
-                onSnapshot(q, (snapshot) => {
+
+                // Crear UN SOLO listener y guardar la función unsubscribe
+                this._unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
                     const cloudPosts = [];
                     snapshot.forEach(docSnap => {
                         cloudPosts.push({
@@ -122,12 +111,12 @@ class CloudDatabaseService {
                             ...docSnap.data()
                         });
                     });
-
                     this.announcements = cloudPosts;
                     this.saveLocalCache(cloudPosts);
                     this.notifySubscribers();
                 }, (error) => {
                     console.warn("Error en escucha de Firestore (usando respaldo local):", error);
+                    this.isCloudConnected = false;
                     this.loadFallbackData();
                 });
 
@@ -139,7 +128,7 @@ class CloudDatabaseService {
                 return false;
             }
         } else {
-            // Sin Firebase configurado todavía: cargar respaldo
+            // Sin Firebase configurado: cargar respaldo local
             this.isCloudConnected = false;
             this.loadFallbackData();
             return false;
@@ -147,7 +136,7 @@ class CloudDatabaseService {
     }
 
     /**
-     * Carga datos de respaldo
+     * Carga datos de respaldo desde localStorage o los valores por defecto
      */
     loadFallbackData() {
         try {
@@ -204,13 +193,15 @@ class CloudDatabaseService {
                     ...newPost,
                     createdAt: serverTimestamp()
                 });
+                // El onSnapshot actualizará la UI automáticamente
                 return { success: true, inCloud: true };
             } catch (err) {
                 console.error("Error al guardar en Firestore:", err);
+                return { success: false, inCloud: true, error: err.message };
             }
         }
 
-        // Respaldo local
+        // Respaldo local (sin conexión a Firebase)
         newPost.id = 'post-' + Date.now();
         this.announcements.unshift(newPost);
         this.saveLocalCache(this.announcements);
@@ -226,7 +217,7 @@ class CloudDatabaseService {
             try {
                 const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
                 await deleteDoc(doc(this.db, "announcements", postId));
-                // El onSnapshot actualizará la UI automáticamente
+                // El onSnapshot actualizará la UI automáticamente al recibir el cambio
                 return { success: true, inCloud: true };
             } catch (err) {
                 console.error("Error al eliminar documento en Firestore:", err);
@@ -242,12 +233,44 @@ class CloudDatabaseService {
     }
 
     /**
+     * Siembra los anuncios oficiales iniciales en Firestore (solo si está vacío)
+     * Llamado manualmente desde el panel admin con el botón "Restaurar Originales"
+     */
+    async seedDefaultAnnouncements() {
+        if (!this.isCloudConnected || !this.db) {
+            this.announcements = [...DEFAULT_ANNOUNCEMENTS];
+            this.saveLocalCache(this.announcements);
+            this.notifySubscribers();
+            return;
+        }
+
+        try {
+            const { collection, addDoc, getDocs, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js");
+            const colRef = collection(this.db, "announcements");
+            const existingDocs = await getDocs(colRef);
+
+            if (existingDocs.empty) {
+                for (const item of DEFAULT_ANNOUNCEMENTS) {
+                    await addDoc(colRef, {
+                        ...item,
+                        isOfficial: true,
+                        createdAt: serverTimestamp()
+                    });
+                }
+                console.log("Anuncios por defecto sembrados en Firestore.");
+            } else {
+                console.log("Firestore ya tiene anuncios, no se siembran duplicados.");
+            }
+        } catch (err) {
+            console.error("Error al sembrar anuncios por defecto:", err);
+        }
+    }
+
+    /**
      * Restaura los anuncios iniciales
      */
     restoreDefaults() {
-        this.announcements = [...DEFAULT_ANNOUNCEMENTS];
-        this.saveLocalCache(this.announcements);
-        this.notifySubscribers();
+        this.seedDefaultAnnouncements();
     }
 }
 

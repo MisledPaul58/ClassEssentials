@@ -107,8 +107,8 @@ class CloudDatabaseService {
                     const cloudPosts = [];
                     snapshot.forEach(docSnap => {
                         cloudPosts.push({
-                            id: docSnap.id,
-                            ...docSnap.data()
+                            ...docSnap.data(),   // datos del documento primero
+                            id: docSnap.id        // ID real de Firestore siempre gana (va al final)
                         });
                     });
                     this.announcements = cloudPosts;

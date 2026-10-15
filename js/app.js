@@ -867,7 +867,7 @@ function renderAdminToolbar() {
                     <span>👑</span> Modo Dueño Activo (MisledPaul58)
                 </span>
                 <span class="admin-banner-desc">
-                    Tienes control total: puedes borrar cualquier anuncio del tablón con el botón rojo, crear anuncios oficiales o gestionar la base de datos en la nube.
+                    Control total del tablón: puedes borrar cualquier anuncio con el botón rojo, crear anuncios oficiales o conectar la base de datos en la nube.
                 </span>
             </div>
 
@@ -877,6 +877,9 @@ function renderAdminToolbar() {
                 </button>
                 <button class="btn btn-secondary btn-sm" id="btn-admin-open-db-config" title="Conectar o editar Firebase Firestore">
                     <span>⚙️</span> Conectar Firebase
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btn-admin-open-pwd-modal" title="Cambiar tu contraseña de administrador">
+                    <span>🔑</span> Cambiar Contraseña
                 </button>
                 <button class="btn btn-secondary btn-sm" id="btn-admin-restore-defaults" title="Restaurar anuncios predeterminados">
                     <span>🔄</span> Restaurar Originales
@@ -899,6 +902,11 @@ function renderAdminToolbar() {
     const btnOpenDb = document.getElementById('btn-admin-open-db-config');
     if (btnOpenDb) {
         btnOpenDb.addEventListener('click', openDbConfigModal);
+    }
+
+    const btnOpenPwd = document.getElementById('btn-admin-open-pwd-modal');
+    if (btnOpenPwd) {
+        btnOpenPwd.addEventListener('click', openChangePasswordModal);
     }
 
     const btnRestore = document.getElementById('btn-admin-restore-defaults');
@@ -954,7 +962,10 @@ function handleAdminLoginSubmit(e) {
     const pinInput = document.getElementById('admin-pin-input');
     const enteredPin = pinInput ? pinInput.value.trim() : '';
 
-    if (enteredPin === ADMIN_CONFIG.defaultPin || enteredPin === 'ieslasencinas') {
+    const customPwd = localStorage.getItem('classessentials_custom_admin_pwd_v1');
+    const validPwd = customPwd || ADMIN_CONFIG.defaultPin;
+
+    if (enteredPin === validPwd || enteredPin === 'ieslasencinas') {
         AppState.isAdmin = true;
         localStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, 'true');
         closeAdminLoginModal();
@@ -962,8 +973,50 @@ function handleAdminLoginSubmit(e) {
         renderAnnouncements();
         showToast('¡Modo Dueño activado! Ya puedes borrar y publicar anuncios.', 'success');
     } else {
-        alert('PIN de seguridad incorrecto.');
+        alert('Contraseña incorrecta.');
     }
+}
+
+function openChangePasswordModal() {
+    const modal = document.getElementById('change-pwd-modal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        const newPwd = document.getElementById('new-admin-pwd-input');
+        if (newPwd) {
+            newPwd.value = '';
+            setTimeout(() => newPwd.focus(), 100);
+        }
+        const confirmPwd = document.getElementById('confirm-admin-pwd-input');
+        if (confirmPwd) confirmPwd.value = '';
+    }
+}
+
+function closeChangePasswordModal() {
+    const modal = document.getElementById('change-pwd-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function handleChangePasswordSubmit(e) {
+    e.preventDefault();
+    const newPwd = document.getElementById('new-admin-pwd-input').value.trim();
+    const confirmPwd = document.getElementById('confirm-admin-pwd-input').value.trim();
+
+    if (!newPwd || newPwd.length < 4) {
+        alert('La contraseña debe tener al menos 4 caracteres.');
+        return;
+    }
+    if (newPwd !== confirmPwd) {
+        alert('Las contraseñas no coinciden. Por favor, asegúrate de escribir la misma en ambos campos.');
+        return;
+    }
+
+    localStorage.setItem('classessentials_custom_admin_pwd_v1', newPwd);
+    closeChangePasswordModal();
+    showToast('Contraseña de administrador actualizada con éxito', 'success');
 }
 
 function logoutAdmin() {
@@ -1111,27 +1164,6 @@ async function handlePublishSubmit(e) {
     }
 }
 
-function prepareContributionForCreator() {
-    const title = document.getElementById('post-title').value.trim();
-    const category = document.getElementById('post-category').value;
-    const author = document.getElementById('post-author').value.trim() || 'Alumno 1º DAM';
-    const link = document.getElementById('post-link').value.trim();
-    const description = document.getElementById('post-description').value.trim();
-
-    const template = `### Sugerencia de Recurso para ClassEssentials 1º DAM
-- **Título**: ${title || '[Título del Recurso]'}
-- **Categoría**: ${category}
-- **Autor / Alumno**: ${author}
-- **Enlace de Descarga / URL**: ${link || 'N/A'}
-- **Descripción**: ${description || '[Explicación de por qué es útil para la clase]'}`;
-
-    navigator.clipboard.writeText(template).then(() => {
-        showToast('Plantilla copiada al portapapeles para enviar al creador', 'success');
-    }).catch(() => {
-        prompt('Copia esta plantilla para enviarla al creador:', template);
-    });
-}
-
 /* ==========================================================================
    TOASTS Y EVENT LISTENERS
    ========================================================================== */
@@ -1222,6 +1254,23 @@ function initEventListeners() {
         });
     }
 
+    // Formulario de cambio de contraseña
+    const changePwdForm = document.getElementById('change-pwd-form');
+    if (changePwdForm) changePwdForm.addEventListener('submit', handleChangePasswordSubmit);
+
+    const btnCloseChangePwd = document.getElementById('btn-close-change-pwd-modal');
+    if (btnCloseChangePwd) btnCloseChangePwd.addEventListener('click', closeChangePasswordModal);
+
+    const btnCancelChangePwd = document.getElementById('btn-cancel-change-pwd-modal');
+    if (btnCancelChangePwd) btnCancelChangePwd.addEventListener('click', closeChangePasswordModal);
+
+    const changePwdModalBackdrop = document.getElementById('change-pwd-modal');
+    if (changePwdModalBackdrop) {
+        changePwdModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === changePwdModalBackdrop) closeChangePasswordModal();
+        });
+    }
+
     // Modal de configuración de base de datos
     const dbConfigForm = document.getElementById('db-config-form');
     if (dbConfigForm) dbConfigForm.addEventListener('submit', handleDbConfigSubmit);
@@ -1297,6 +1346,9 @@ function initEventListeners() {
     const closeModalBtn = document.getElementById('btn-close-modal');
     if (closeModalBtn) closeModalBtn.addEventListener('click', closePublishModal);
 
+    const cancelPublishBtn = document.getElementById('btn-cancel-publish');
+    if (cancelPublishBtn) cancelPublishBtn.addEventListener('click', closePublishModal);
+
     const modalBackdrop = document.getElementById('publish-modal');
     if (modalBackdrop) {
         modalBackdrop.addEventListener('click', (e) => {
@@ -1306,9 +1358,6 @@ function initEventListeners() {
 
     const publishForm = document.getElementById('publish-form');
     if (publishForm) publishForm.addEventListener('submit', handlePublishSubmit);
-
-    const btnShareCreator = document.getElementById('btn-share-creator');
-    if (btnShareCreator) btnShareCreator.addEventListener('click', prepareContributionForCreator);
 
     // Navegación suave
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

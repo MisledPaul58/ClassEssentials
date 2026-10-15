@@ -18,7 +18,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><path d='M30 70 L50 25 L70 70 L50 55 Z' fill='white'/></svg>">
 
     <!-- Estilos CSS con Cache-Buster para forzar actualización inmediata -->
-    <link rel="stylesheet" href="css/style.css?v=2.2.0">
+    <link rel="stylesheet" href="css/style.css?v=2.3.0">
 </head>
 <body>
 
@@ -418,11 +418,9 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="btn-share-creator" title="Copia la plantilla para enviársela al dueño de la web y añadirla de forma fija">
-                        📋 Copiar plantilla para el dueño
-                    </button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-publish">Cancelar</button>
                     <button type="submit" class="btn btn-primary" id="btn-submit-publish">
-                        <span>🚀</span> Publicar Recurso
+                        <span>🚀</span> Publicar en el Tablón
                     </button>
                 </div>
             </form>
@@ -439,17 +437,42 @@
             <form id="admin-login-form">
                 <div class="modal-body">
                     <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
-                        Introduce tu PIN de administrador para activar la gestión del tablón. Podrás <strong>borrar anuncios</strong> con 1 clic, publicar anuncios oficiales y conectar la base de datos.
+                        Introduce tu contraseña de administrador para activar la gestión del tablón. Podrás <strong>borrar anuncios</strong> con 1 clic, publicar anuncios oficiales y conectar la base de datos en la nube.
                     </p>
-                    <div class="form-group" style="margin-top: 0.75rem;">
-                        <label class="form-label" for="admin-pin-input">PIN de Administrador:</label>
-                        <input type="password" id="admin-pin-input" class="form-input" placeholder="Introduce el PIN de seguridad" required autocomplete="current-password" />
-                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">PIN por defecto: <code>dam2026</code></span>
+                    <div class="form-group" style="margin-top: 0.85rem;">
+                        <label class="form-label" for="admin-pin-input">Contraseña de Administrador:</label>
+                        <input type="password" id="admin-pin-input" class="form-input" placeholder="Introduce tu contraseña" required autocomplete="current-password" />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-admin-modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary"><span>🔓</span> Acceder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Cambiar Contraseña de Administrador -->
+    <div class="modal-backdrop" id="change-pwd-modal" aria-hidden="true" role="dialog">
+        <div class="modal-container" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🔑 Cambiar Contraseña de Administrador</h3>
+                <button class="modal-close-btn" id="btn-close-change-pwd-modal" aria-label="Cerrar">×</button>
+            </div>
+            <form id="change-pwd-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="new-admin-pwd-input">Nueva Contraseña:</label>
+                        <input type="password" id="new-admin-pwd-input" class="form-input" placeholder="Introduce la nueva contraseña" required minlength="4" />
+                    </div>
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label class="form-label" for="confirm-admin-pwd-input">Repetir Nueva Contraseña:</label>
+                        <input type="password" id="confirm-admin-pwd-input" class="form-input" placeholder="Repite la nueva contraseña" required minlength="4" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-change-pwd-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><span>💾</span> Guardar Contraseña</button>
                 </div>
             </form>
         </div>
@@ -540,6 +563,6 @@
     </footer>
 
     <!-- Script Principal como Módulo ES6 con Cache-Buster -->
-    <script type="module" src="js/app.js?v=2.2.0"></script>
+    <script type="module" src="js/app.js?v=2.3.0"></script>
 </body>
 </html>

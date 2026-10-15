@@ -1,25 +1,13 @@
 /**
  * ClassEssentials - Gestor de Base de Datos en la Nube (Cloud Database)
- * Soporte para Firebase Firestore en tiempo real y almacenamiento en la nube para 1º DAM
+ * Integración con Google Firebase Firestore en tiempo real para 1º DAM (IES Las Encinas)
  */
 
-import { DEFAULT_ANNOUNCEMENTS } from './data.js';
-
-// Configuración de Firebase Firestore (Google Cloud - Nivel Gratuito Permanente)
-// El dueño de la web puede modificar estos datos desde su panel secreto de administración
-export const DEFAULT_FIREBASE_CONFIG = {
-    apiKey: "AIzaSyD-CLASS-ESSENTIALS-IES-LAS-ENCINAS",
-    authDomain: "classessentials-ies-las-encinas.firebaseapp.com",
-    projectId: "classessentials-ies-las-encinas",
-    storageBucket: "classessentials-ies-las-encinas.appspot.com",
-    messagingSenderId: "109827364512",
-    appId: "1:109827364512:web:987bc6543de21a"
-};
+import { DEFAULT_ANNOUNCEMENTS, FIREBASE_CONFIG } from './data.js';
 
 const STORAGE_KEYS = {
     FIREBASE_CONFIG: 'classessentials_firebase_custom_config_v1',
-    CLOUD_CACHE: 'classessentials_cloud_announcements_cache_v1',
-    LOCAL_ANNOUNCEMENTS: 'classessentials_local_announcements_v1'
+    LOCAL_ANNOUNCEMENTS: 'classessentials_cloud_announcements_cache_v2'
 };
 
 class CloudDatabaseService {
@@ -32,29 +20,37 @@ class CloudDatabaseService {
     }
 
     /**
-     * Obtiene la configuración de Firebase activa (personalizada en localStorage o por defecto)
+     * Obtiene la configuración de Firebase activa (prioriza la guardada por el dueño, o la de data.js)
      */
     getConfig() {
         try {
             const saved = localStorage.getItem(STORAGE_KEYS.FIREBASE_CONFIG);
             if (saved) {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                if (parsed.projectId && parsed.apiKey) {
+                    return parsed;
+                }
             }
         } catch (e) {
-            console.warn("No se pudo leer la configuración personalizada de Firebase:", e);
+            console.warn("Error leyendo config de Firebase local:", e);
         }
-        return DEFAULT_FIREBASE_CONFIG;
+
+        if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.apiKey) {
+            return FIREBASE_CONFIG;
+        }
+
+        return null;
     }
 
     /**
-     * Guarda una nueva configuración de Firebase introducida por el dueño
+     * Guarda la configuración de Firebase introducida por el dueño
      */
     saveConfig(configObj) {
         try {
             localStorage.setItem(STORAGE_KEYS.FIREBASE_CONFIG, JSON.stringify(configObj));
             return true;
         } catch (e) {
-            console.error("Error al guardar configuración de Firebase:", e);
+            console.error("Error al guardar config de Firebase:", e);
             return false;
         }
     }
@@ -63,24 +59,60 @@ class CloudDatabaseService {
      * Inicializa la conexión con Firebase Firestore
      */
     async init(onUpdateCallback) {
-        if (onUpdateCallback) {
+        if (onUpdateCallback && !this.subscribers.includes(onUpdateCallback)) {
             this.subscribers.push(onUpdateCallback);
         }
 
         const config = this.getConfig();
 
-        // Intentar conectar con Firebase Firestore dinámicamente si hay credenciales válidas
-        if (config && config.projectId && !config.projectId.includes("IES-LAS-ENCINAS")) {
+        if (config && config.projectId && config.apiKey && !config.apiKey.includes("AIzaSyD-CLASS-ESSENTIALS")) {
             try {
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-                const { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+                const { 
+                    getFirestore, 
+                    collection, 
+                    onSnapshot, 
+                    addDoc, 
+                    deleteDoc, 
+                    doc, 
+                    getDocs,
+                    serverTimestamp, 
+                    query, 
+                    orderBy 
+                } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-                const app = initializeApp(config);
+                let app;
+                const apps = getApps();
+                if (apps.length === 0) {
+                    app = initializeApp(config);
+                } else {
+                    app = apps[0];
+                }
+
                 this.db = getFirestore(app);
                 this.isCloudConnected = true;
 
-                // Escuchar cambios en tiempo real en la colección "announcements"
-                const q = query(collection(this.db, "announcements"), orderBy("createdAt", "desc"));
+                // Consulta ordenada cronológicamente
+                const colRef = collection(this.db, "announcements");
+
+                // Sembrado inicial si la colección está vacía
+                try {
+                    const existingDocs = await getDocs(colRef);
+                    if (existingDocs.empty) {
+                        for (const item of DEFAULT_ANNOUNCEMENTS) {
+                            await addDoc(colRef, {
+                                ...item,
+                                isOfficial: true,
+                                createdAt: serverTimestamp()
+                            });
+                        }
+                    }
+                } catch (seedErr) {
+                    console.warn("Aviso al comprobar datos iniciales:", seedErr);
+                }
+
+                // Suscripción en tiempo real (WebSockets / Firestore Snapshot)
+                const q = query(colRef, orderBy("createdAt", "desc"));
                 
                 onSnapshot(q, (snapshot) => {
                     const cloudPosts = [];
@@ -92,29 +124,30 @@ class CloudDatabaseService {
                     });
 
                     this.announcements = cloudPosts;
-                    this.cacheAnnouncements(cloudPosts);
+                    this.saveLocalCache(cloudPosts);
                     this.notifySubscribers();
                 }, (error) => {
-                    console.warn("Aviso de Firestore en tiempo real (usando caché / modo híbrido):", error);
+                    console.warn("Error en escucha de Firestore (usando respaldo local):", error);
                     this.loadFallbackData();
                 });
 
                 return true;
             } catch (err) {
-                console.warn("No se pudo iniciar Firebase Firestore (usando almacenamiento sincronizado):", err);
+                console.warn("No se pudo conectar a Firebase Firestore:", err);
                 this.isCloudConnected = false;
                 this.loadFallbackData();
                 return false;
             }
         } else {
-            // Modo local / caché sincronizada mientras el dueño introduce sus claves de Firebase
+            // Sin Firebase configurado todavía: cargar respaldo
+            this.isCloudConnected = false;
             this.loadFallbackData();
             return false;
         }
     }
 
     /**
-     * Carga datos iniciales combinando los predeterminados con los almacenados
+     * Carga datos de respaldo
      */
     loadFallbackData() {
         try {
@@ -123,7 +156,7 @@ class CloudDatabaseService {
                 this.announcements = JSON.parse(cached);
             } else {
                 this.announcements = [...DEFAULT_ANNOUNCEMENTS];
-                this.saveLocalData(this.announcements);
+                this.saveLocalCache(this.announcements);
             }
         } catch (e) {
             this.announcements = [...DEFAULT_ANNOUNCEMENTS];
@@ -131,17 +164,9 @@ class CloudDatabaseService {
         this.notifySubscribers();
     }
 
-    saveLocalData(posts) {
+    saveLocalCache(posts) {
         try {
             localStorage.setItem(STORAGE_KEYS.LOCAL_ANNOUNCEMENTS, JSON.stringify(posts));
-        } catch (e) {
-            console.error("Error al guardar datos locales:", e);
-        }
-    }
-
-    cacheAnnouncements(posts) {
-        try {
-            localStorage.setItem(STORAGE_KEYS.CLOUD_CACHE, JSON.stringify(posts));
         } catch (e) {}
     }
 
@@ -156,7 +181,7 @@ class CloudDatabaseService {
     }
 
     /**
-     * Publica un nuevo recurso o anuncio (guardado en la nube y visible para todos)
+     * Guarda un nuevo anuncio o recurso en la Base de Datos en la Nube
      */
     async addAnnouncement(postData) {
         const newPost = {
@@ -185,16 +210,16 @@ class CloudDatabaseService {
             }
         }
 
-        // Si Firebase aún no está conectado, guardar en la colección activa local
+        // Respaldo local
         newPost.id = 'post-' + Date.now();
         this.announcements.unshift(newPost);
-        this.saveLocalData(this.announcements);
+        this.saveLocalCache(this.announcements);
         this.notifySubscribers();
         return { success: true, inCloud: false };
     }
 
     /**
-     * Elimina un anuncio como dueño / administrador (eliminado de la nube para todos)
+     * Borra permanentemente un anuncio de la Base de Datos en la Nube
      */
     async deleteAnnouncement(postId) {
         if (this.isCloudConnected && this.db) {
@@ -203,23 +228,23 @@ class CloudDatabaseService {
                 await deleteDoc(doc(this.db, "announcements", postId));
                 return { success: true, inCloud: true };
             } catch (err) {
-                console.error("Error al eliminar de Firestore:", err);
+                console.error("Error al eliminar documento en Firestore:", err);
             }
         }
 
-        // Eliminación local
+        // Respaldo local
         this.announcements = this.announcements.filter(p => p.id !== postId);
-        this.saveLocalData(this.announcements);
+        this.saveLocalCache(this.announcements);
         this.notifySubscribers();
         return { success: true, inCloud: false };
     }
 
     /**
-     * Restaura los anuncios oficiales originales
+     * Restaura los anuncios iniciales
      */
     restoreDefaults() {
         this.announcements = [...DEFAULT_ANNOUNCEMENTS];
-        this.saveLocalData(this.announcements);
+        this.saveLocalCache(this.announcements);
         this.notifySubscribers();
     }
 }

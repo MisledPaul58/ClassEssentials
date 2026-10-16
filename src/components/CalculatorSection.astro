@@ -1,0 +1,54 @@
+<section id="calculadora" class="app-section">
+  <div class="container">
+    <div class="section-wrapper">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-kicker">CONTROL DE ASISTENCIA</span>
+          <h2 class="section-title">
+            <span>📊</span> Calculadora de Faltas y Matrícula
+          </h2>
+          <p class="section-subtitle">
+            Comprueba de forma visual tu distancia a los límites legales de evaluación continua en cada
+            módulo y de pérdida global de matrícula.
+          </p>
+        </div>
+
+        <div class="calc-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-print-report" title="Imprimir informe en papel o guardar como PDF">
+            <span>🖨️</span> Imprimir Informe
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-export-json" title="Descargar copia de seguridad de tus faltas">
+            <span>💾</span> Exportar JSON
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-import-json" title="Cargar una copia de seguridad anterior">
+            <span>📂</span> Importar JSON
+          </button>
+          <button class="btn btn-danger-outline btn-sm" id="btn-reset-absences" title="Poner a cero todos los contadores de faltas">
+            <span>🔄</span> Reiniciar Todo
+          </button>
+          <input type="file" id="json-file-input" accept=".json" style="display: none;" />
+        </div>
+      </div>
+
+      <!-- Resumen global de pérdida de matrícula (se genera con JS) -->
+      <div id="matricula-summary-wrap"></div>
+
+      <!-- Barra de aviso de reglas -->
+      <div class="calc-controls-bar">
+        <div class="calc-filter-info">
+          <span>ℹ️</span>
+          <span>
+            <strong>Regla de Evaluación Continua:</strong> cuentan <em>todas</em> las faltas
+            (<strong>Justificadas + Injustificadas</strong>). Los datos se guardan en tu navegador.
+          </span>
+        </div>
+        <div class="calc-autosave-note">
+          <span>💾 Guardado automático activo</span>
+        </div>
+      </div>
+
+      <!-- Cuadrícula de módulos (7 asignaturas, generada con JS) -->
+      <div class="modules-grid" id="modules-grid"></div>
+    </div>
+  </div>
+</section>

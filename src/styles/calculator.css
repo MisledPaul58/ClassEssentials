@@ -1,0 +1,520 @@
+/* ==========================================================================
+   Calculadora de faltas y matrícula.
+   ========================================================================== */
+
+/* Resumen global de pérdida de matrícula */
+.matricula-summary-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(17, 24, 39, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .matricula-summary-card {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.matricula-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.matricula-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.matricula-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    max-width: 680px;
+}
+
+.matricula-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* Barra de progreso global */
+.progress-container {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+}
+
+.progress-track {
+    width: 100%;
+    height: 12px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+}
+
+.progress-bar.safe {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.progress-bar.warn {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.progress-bar.danger {
+    background: linear-gradient(90deg, #f97316, #ea580c);
+}
+
+.progress-bar.lost {
+    background: linear-gradient(90deg, #ef4444, #b91c1c);
+}
+
+/* Tarjeta de estado de matrícula */
+.matricula-status-badge {
+    padding: 0.8rem 1.25rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 220px;
+    border: 1px solid transparent;
+}
+
+.matricula-status-badge.safe {
+    background: var(--status-safe-bg);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--status-safe);
+}
+
+.matricula-status-badge.warn {
+    background: var(--status-warn-bg);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: var(--status-warn);
+}
+
+.matricula-status-badge.danger {
+    background: var(--status-danger-bg);
+    border-color: rgba(249, 115, 22, 0.3);
+    color: var(--status-danger);
+}
+
+.matricula-status-badge.lost {
+    background: var(--status-lost-bg);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--status-lost);
+}
+
+.status-badge-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-top: 0.2rem;
+}
+
+.status-badge-sub {
+    font-size: 0.78rem;
+    opacity: 0.85;
+}
+
+/* Barra informativa y acciones de la calculadora */
+.calc-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 0.85rem 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.calc-filter-info {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Nota informativa junto a los botones de la calculadora */
+.calc-autosave-note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 46ch;
+}
+
+/* Cuadrícula de módulos */
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
+    gap: 1.5rem;
+}
+
+.module-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    min-width: 0;
+}
+
+.module-card:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.module-title-area {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.module-badge-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+}
+
+.module-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-primary);
+}
+
+.module-meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+/* Inputs de faltas (justificadas / injustificadas) */
+.module-inputs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    background: var(--bg-elevated);
+    padding: 0.85rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.absence-input-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.absence-input-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.absence-stepper {
+    display: flex;
+    align-items: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.stepper-btn {
+    width: 32px;
+    height: 34px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.stepper-btn:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+.stepper-btn:active {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.stepper-input {
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    background: transparent;
+    border: none;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    -moz-appearance: textfield;
+}
+
+.stepper-input::-webkit-outer-spin-button,
+.stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Progreso del módulo */
+.module-progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.module-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.module-total-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.module-total-counter {
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.module-total-limit {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.module-progress-bar-wrap {
+    height: 10px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    display: flex;
+    position: relative;
+}
+
+.bar-segment-justified {
+    height: 100%;
+    background: #0284c7;
+    transition: width 0.3s ease;
+}
+
+.bar-segment-unjustified {
+    height: 100%;
+    background: #ea580c;
+    transition: width 0.3s ease;
+}
+
+.bar-segment-danger {
+    background: #ef4444 !important;
+}
+
+/* Estado del módulo */
+.module-status-banner {
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+}
+
+.module-status-banner.safe {
+    background: var(--status-safe-bg);
+    color: var(--status-safe);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.module-status-banner.warn {
+    background: var(--status-warn-bg);
+    color: var(--status-warn);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.module-status-banner.danger {
+    background: var(--status-danger-bg);
+    color: var(--status-danger);
+    border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.module-status-banner.lost {
+    background: var(--status-lost-bg);
+    color: var(--status-lost);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.remaining-count {
+    font-family: var(--font-mono);
+    font-weight: 800;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 840px) {
+    .matricula-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .matricula-status-badge {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .matricula-summary-card {
+        padding: 1.15rem 1.1rem;
+    }
+
+    .matricula-stats-row {
+        gap: 1rem 1.4rem;
+    }
+
+    .stat-num {
+        font-size: 1.3rem;
+    }
+
+    .calc-actions {
+        width: 100%;
+    }
+
+    .calc-actions .btn {
+        flex: 1 1 auto;
+    }
+
+    .module-card {
+        padding: 1.15rem;
+    }
+}
+
+@media (max-width: 440px) {
+    /* En pantallas muy estrechas, los dos contadores pasan a una columna */
+    .module-inputs-row {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+        padding: 0.7rem;
+    }
+
+    .stepper-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .stepper-input {
+        height: 38px;
+    }
+}

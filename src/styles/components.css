@@ -1,0 +1,363 @@
+/* ==========================================================================
+   Componentes compartidos: botones, "bocadillos", divisor de sección,
+   envoltorio de sección, estados vacíos y toasts.
+   ========================================================================== */
+
+/* Botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: inherit;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid transparent;
+    text-decoration: none;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.btn-primary {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+.btn-primary:hover {
+    background: var(--accent-blue-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-danger-outline {
+    background: transparent;
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger-outline:hover {
+    background: var(--status-lost-bg);
+}
+
+.btn-sm {
+    padding: 0.38rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* "Bocadillos" / píldoras: pueden envolver texto sin salirse de su caja */
+.badge-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.35;
+    white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="light"] .badge-tag {
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.badge-tag-green {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+[data-theme="light"] .badge-tag-green {
+    background: rgba(22, 163, 74, 0.1);
+    color: #15803d;
+    border-color: rgba(22, 163, 74, 0.2);
+}
+
+.meta-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-full);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.meta-pill.highlight {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+/* Divisor visual entre secciones */
+.section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 4rem auto 2.5rem;
+    max-width: 1240px;
+    padding: 0 1.25rem;
+    position: relative;
+    z-index: 10;
+}
+
+.divider-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.7) 50%, transparent);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.divider-icon {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #60a5fa;
+    background: #0f172a;
+    border: 2px solid #3b82f6;
+    padding: 0.5rem 1.4rem;
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+[data-theme="light"] .divider-icon {
+    background: #ffffff;
+    border-color: #2563eb;
+    color: #1d4ed8;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+}
+
+/* Envoltorio de cada sección */
+.section-wrapper {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 4px solid #3b82f6;
+    border-radius: var(--radius-lg);
+    padding: 2.75rem 2.25rem;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: var(--transition);
+}
+
+[data-theme="light"] .section-wrapper {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #2563eb;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+.section-wrapper:hover {
+    border-color: rgba(59, 130, 246, 0.35);
+    border-top-color: #60a5fa;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+}
+
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+}
+
+.section-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.section-kicker {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-blue);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.section-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-primary);
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.98rem;
+    max-width: 760px;
+    line-height: 1.6;
+}
+
+/* Estados vacíos (calendario y tablón) */
+.board-empty,
+.timeline-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.board-empty-title,
+.timeline-empty-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.board-empty-sub {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Toasts de notificación */
+.toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.6rem;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+.toast {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: min(360px, calc(100vw - 3rem));
+    overflow-wrap: anywhere;
+}
+
+.toast.success { border-left: 4px solid #10b981; }
+.toast.info { border-left: 4px solid #3b82f6; }
+.toast.warn { border-left: 4px solid #f59e0b; }
+.toast.error { border-left: 4px solid #ef4444; }
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Disparadores secretos del modo dueño */
+.secret-trigger {
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s ease;
+}
+
+.secret-trigger:hover {
+    opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .section-wrapper {
+        padding: 1.5rem 1.15rem;
+    }
+
+    .section-divider {
+        gap: 0.75rem;
+        margin: 2.5rem auto 1.5rem;
+    }
+
+    .divider-icon {
+        font-size: 0.62rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: var(--radius-md);
+        letter-spacing: 0.05em;
+    }
+}
+
+@media (max-width: 480px) {
+    .toast-container {
+        right: 1rem;
+        left: 1rem;
+        bottom: 1rem;
+        align-items: stretch;
+    }
+
+    .toast {
+        max-width: 100%;
+    }
+}

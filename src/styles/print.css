@@ -1,0 +1,56 @@
+/* ==========================================================================
+   Estilos de impresión (informe de faltas listo para papel o PDF).
+   ========================================================================== */
+
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    .bg-mesh,
+    .site-header,
+    .site-footer,
+    .calc-controls-bar,
+    .calendar-filters,
+    .announcements-toolbar,
+    .section-divider,
+    .admin-banner,
+    .admin-actions-group,
+    .resource-actions,
+    .owner-floating-pill,
+    .toast-container,
+    .db-status-badge,
+    .btn,
+    .theme-toggle-btn {
+        display: none !important;
+    }
+
+    .app-section {
+        padding: 0 !important;
+    }
+
+    .section-wrapper,
+    .hero-card {
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+    }
+
+    .module-card,
+    .matricula-summary-card,
+    .event-card,
+    .resource-card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+
+    .module-card:hover,
+    .resource-card:hover,
+    .event-card:hover {
+        transform: none !important;
+    }
+}

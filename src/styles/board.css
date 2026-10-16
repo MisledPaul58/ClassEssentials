@@ -1,0 +1,421 @@
+/* ==========================================================================
+   Tablón de anuncios y recursos + gestión del dueño.
+   ========================================================================== */
+
+/* Barra de búsqueda y categorías */
+.announcements-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-input-wrap {
+    position: relative;
+    flex: 1 1 260px;
+    max-width: 380px;
+    min-width: 0;
+}
+
+.search-input-wrap input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.4rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.search-input-wrap input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+.category-filter-wrap {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-width: 0;
+}
+
+.category-filter-wrap label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.category-filter-wrap .form-select {
+    width: auto;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+/* Cuadrícula de recursos */
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
+    gap: 1.5rem;
+}
+
+.resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: var(--transition);
+    min-width: 0;
+}
+
+.resource-card:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.resource-card.owner-post {
+    border-top: 3px solid #2563eb;
+}
+
+.resource-card.peer-post {
+    border-top: 3px solid #10b981;
+}
+
+.resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.resource-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    letter-spacing: 0.04em;
+}
+
+.resource-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.resource-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+}
+
+.resource-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+}
+
+.resource-link-row {
+    margin-top: 0.25rem;
+}
+
+.resource-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.resource-author {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.resource-edited {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Botones de editar / borrar de cada tarjeta */
+.resource-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.32rem 0.7rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid;
+}
+
+.btn-action-edit {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.35);
+    color: #60a5fa;
+}
+
+.btn-action-edit:hover {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.btn-action-delete {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.btn-action-delete:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+/* Caja explicativa de la visibilidad compartida */
+.shared-visibility-info {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Estado de conexión y modo dueño
+   -------------------------------------------------------------------------- */
+
+.db-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.db-status-badge.connected {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.db-status-badge.fallback {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.board-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Insignia flotante secreta del dueño (visible solo con sesión iniciada) */
+.owner-floating-pill {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 1.25rem;
+    z-index: 999;
+    background: linear-gradient(135deg, #ea580c, #b91c1c);
+    color: white;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 800;
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.45);
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    animation: toastIn 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    max-width: calc(100vw - 2.5rem);
+}
+
+.btn-owner-pill-logout {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    padding: 0.15rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.btn-owner-pill-logout:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Banner de herramientas del dueño */
+.admin-banner {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.15), rgba(30, 41, 59, 0.9));
+    border: 1px solid rgba(249, 115, 22, 0.35);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+[data-theme="light"] .admin-banner {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(241, 245, 249, 0.9));
+}
+
+.admin-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.admin-banner-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fdba74;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+[data-theme="light"] .admin-banner-title {
+    color: #c2410c;
+}
+
+.admin-banner-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.admin-actions-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Indicador dentro del modal de publicación */
+.admin-publish-indicator {
+    padding: 0.5rem 0.75rem;
+    background: rgba(234, 88, 12, 0.15);
+    border: 1px solid rgba(234, 88, 12, 0.4);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: #fdba74;
+    font-weight: 600;
+}
+
+[data-theme="light"] .admin-publish-indicator {
+    background: rgba(234, 88, 12, 0.1);
+    color: #c2410c;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+    .announcements-toolbar {
+        align-items: stretch;
+    }
+
+    .search-input-wrap {
+        max-width: none;
+        width: 100%;
+    }
+
+    .category-filter-wrap {
+        width: 100%;
+    }
+
+    .category-filter-wrap .form-select {
+        flex: 1;
+        width: auto;
+    }
+
+    .board-header-actions {
+        width: 100%;
+    }
+
+    .board-header-actions .btn-primary {
+        flex: 1;
+    }
+
+    .resource-card {
+        padding: 1.15rem;
+    }
+
+    .admin-actions-group {
+        width: 100%;
+    }
+
+    .admin-actions-group .btn {
+        flex: 1 1 150px;
+    }
+
+    .owner-floating-pill {
+        left: 1rem;
+        right: 1rem;
+        justify-content: space-between;
+    }
+}

@@ -1,0 +1,57 @@
+<!-- Modal de configuración avanzada de la base de datos en la nube (Firebase) -->
+<div
+  class="modal-backdrop"
+  id="db-config-modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="db-config-title"
+>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title" id="db-config-title">⚙️ Conectar Base de Datos en la Nube (Firebase)</h3>
+      <button class="modal-close-btn" id="btn-close-db-modal" aria-label="Cerrar">×</button>
+    </div>
+
+    <form id="db-config-form">
+      <div class="modal-body">
+        <p>
+          Conecta una base de datos gratuita de <strong>Firebase Firestore (Google)</strong> para
+          sincronizar en tiempo real el tablón entre todos los compañeros de 1º DAM.
+        </p>
+        <div class="modal-instructions">
+          1. Ve a
+          <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer">console.firebase.google.com</a>
+          (gratis con tu cuenta de Google).<br />
+          2. Crea un proyecto y activa <strong>Firestore Database</strong>.<br />
+          3. Añade una aplicación Web y copia el objeto <code>firebaseConfig</code>.
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firebase-config-input">
+            Pega aquí el objeto de configuración Firebase (JSON):
+          </label>
+          <textarea
+            id="firebase-config-input"
+            class="form-textarea mono"
+            placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "tu-proyecto.firebaseapp.com",
+  "projectId": "tu-proyecto",
+  "storageBucket": "tu-proyecto.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+        </div>
+        <p class="modal-note">
+          Esta configuración se guarda solo en tu navegador como alternativa al despliegue oficial. La
+          configuración de producción se define con los secretos del repositorio (ver README).
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-db-modal">Cerrar</button>
+        <button type="submit" class="btn btn-primary"><span>💾</span> Guardar y Conectar</button>
+      </div>
+    </form>
+  </div>
+</div>

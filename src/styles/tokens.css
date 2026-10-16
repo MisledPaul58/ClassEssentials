@@ -1,0 +1,175 @@
+/* ==========================================================================
+   ClassEssentials — Tokens de diseño, reset y estilos base
+   IES Las Encinas · 1º DAM · Curso 2026-2027
+   ========================================================================== */
+
+:root {
+    /* Paleta principal — Dark Mode por defecto */
+    --bg-primary: #0b0f19;
+    --bg-secondary: #111827;
+    --bg-card: rgba(17, 24, 39, 0.85);
+    --bg-card-hover: rgba(31, 41, 55, 0.95);
+    --bg-elevated: #1f2937;
+    --bg-input: #1e293b;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-inverse: #0f172a;
+
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-focus: #3b82f6;
+
+    /* Acentos académicos */
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
+    --accent-indigo: #6366f1;
+    --accent-purple: #8b5cf6;
+    --accent-cyan: #06b6d4;
+
+    /* Estados de alerta */
+    --status-safe: #10b981;
+    --status-safe-bg: rgba(16, 185, 129, 0.15);
+    --status-warn: #f59e0b;
+    --status-warn-bg: rgba(245, 158, 11, 0.15);
+    --status-danger: #f97316;
+    --status-danger-bg: rgba(249, 115, 22, 0.15);
+    --status-lost: #ef4444;
+    --status-lost-bg: rgba(239, 68, 68, 0.2);
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 25px rgba(59, 130, 246, 0.25);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    color-scheme: dark;
+}
+
+/* Modo claro */
+[data-theme="light"] {
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --bg-card-hover: #ffffff;
+    --bg-elevated: #e2e8f0;
+    --bg-input: #ffffff;
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-inverse: #f8fafc;
+
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-focus: #2563eb;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 0 25px rgba(37, 99, 235, 0.15);
+
+    --status-safe-bg: rgba(16, 185, 129, 0.12);
+    --status-warn-bg: rgba(245, 158, 11, 0.12);
+    --status-danger-bg: rgba(249, 115, 22, 0.12);
+    --status-lost-bg: rgba(239, 68, 68, 0.12);
+
+    color-scheme: light;
+}
+
+/* Reset y base */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Malla de gradiente de fondo */
+.bg-mesh {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.5;
+    background:
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+}
+
+/* Contenedor general */
+.container {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+/* Secciones de la aplicación */
+.app-section {
+    padding: 3.5rem 0 4.5rem;
+    position: relative;
+}
+
+/*
+ * Seguridad anti-desbordes en móvil: los textos largos (títulos, descripciones
+ * y enlaces aportados por los compañeros) nunca deben salirse de su tarjeta
+ * o "bocadillo", ni siquiera sin espacios (URLS largas, palabras gigantes...).
+ */
+.hero-desc,
+.widget-value,
+.matricula-desc,
+.matricula-title,
+.module-name,
+.module-status-banner,
+.event-title,
+.event-notes,
+.upcoming-title-wrap h3,
+.resource-title,
+.resource-desc,
+.resource-footer,
+.admin-banner-desc,
+.admin-banner-title,
+.normativa-card,
+.status-badge-sub {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .app-section {
+        padding: 2.25rem 0 3rem;
+    }
+}

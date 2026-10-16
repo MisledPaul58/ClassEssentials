@@ -1,0 +1,22 @@
+{
+  "name": "classessentials",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portal académico de 1º DAM (IES Las Encinas): calculadora de faltas, calendario 2026-2027 y tablón colaborativo. Migrado a Astro.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "build:local": "astro build --mode test",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "astro": "^5.18.2",
+    "firebase": "^13.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^5.9.3"
+  }
+}

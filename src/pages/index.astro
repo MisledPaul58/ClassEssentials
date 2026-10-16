@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import OwnerBadge from '../components/OwnerBadge.astro';
+import Hero from '../components/Hero.astro';
+import SectionDivider from '../components/SectionDivider.astro';
+import CalculatorSection from '../components/CalculatorSection.astro';
+import CalendarSection from '../components/CalendarSection.astro';
+import ResourcesSection from '../components/ResourcesSection.astro';
+import NormativaSection from '../components/NormativaSection.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import Toasts from '../components/Toasts.astro';
+import PublishModal from '../components/modals/PublishModal.astro';
+import AdminLoginModal from '../components/modals/AdminLoginModal.astro';
+import ChangePasswordModal from '../components/modals/ChangePasswordModal.astro';
+import DbConfigModal from '../components/modals/DbConfigModal.astro';
+---
+
+<BaseLayout>
+  <OwnerBadge />
+  <Header />
+
+  <main>
+    <Hero />
+
+    <SectionDivider label="📊 MÓDULO 01 • ASISTENCIA" />
+    <CalculatorSection />
+
+    <SectionDivider label="📅 MÓDULO 02 • CALENDARIO & EXÁMENES" />
+    <CalendarSection />
+
+    <SectionDivider label="📢 MÓDULO 03 • TABLÓN & RECURSOS" />
+    <ResourcesSection />
+
+    <SectionDivider label="ℹ️ MÓDULO 04 • GUÍA LEGAL" />
+    <NormativaSection />
+  </main>
+
+  <SiteFooter />
+
+  <PublishModal />
+  <AdminLoginModal />
+  <ChangePasswordModal />
+  <DbConfigModal />
+  <Toasts />
+</BaseLayout>

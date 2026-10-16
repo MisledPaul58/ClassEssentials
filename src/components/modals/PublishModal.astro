@@ -1,0 +1,92 @@
+---
+import { CATEGORIES } from '../../data/announcements';
+---
+
+<!-- Modal para publicar o editar un recurso -->
+<div
+  class="modal-backdrop"
+  id="publish-modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="publish-modal-title"
+>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title" id="publish-modal-title">📢 Compartir Recurso o Enlace Útil</h3>
+      <button class="modal-close-btn" id="btn-close-modal" aria-label="Cerrar ventana">×</button>
+    </div>
+
+    <form id="publish-form">
+      <div class="modal-body">
+        <div id="admin-publish-indicator" class="admin-publish-indicator" style="display: none;">
+          👑 Publicando con permisos de Administrador Oficial (IES Las Encinas)
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="post-title">Título del Recurso / Herramienta *</label>
+          <input
+            type="text"
+            id="post-title"
+            class="form-input"
+            placeholder="Ej: Eclipse Portable 2026, Chuleta de Expresiones Regulares..."
+            required
+            maxlength="140"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="post-category">Categoría *</label>
+          <select id="post-category" class="form-select" required>
+            {CATEGORIES.map(category => (
+              <option value={category.value}>{category.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="post-author">Tu Nombre o Alias (Autor)</label>
+          <input
+            type="text"
+            id="post-author"
+            class="form-input"
+            placeholder="Ej: MisledPaul58 / Alumno 1º DAM"
+            maxlength="80"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="post-link">Enlace de Descarga o Web (URL)</label>
+          <input
+            type="url"
+            id="post-link"
+            class="form-input"
+            placeholder="https://ejemplo.com/descarga-portable"
+            maxlength="500"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="post-description">Descripción o Utilidad para Clase *</label>
+          <textarea
+            id="post-description"
+            class="form-textarea"
+            placeholder="Explica brevemente para qué sirve y en qué módulo o práctica es útil..."
+            required
+            maxlength="2500"></textarea>
+        </div>
+
+        <p class="modal-note" id="publish-modal-note">
+          Podrás editar o borrar tu publicación mientras no recargues la página.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-publish">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-publish">
+          <span>🚀</span> Publicar en el Tablón
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

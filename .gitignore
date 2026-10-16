@@ -1,6 +1,20 @@
+# Dependencias
+node_modules/
+
+# Salida de build
+dist/
+.astro/
+
+# Secretos de entorno (¡NUNCA se suben al repositorio!)
+.env
+.env.local
+.env.production
+.env.production.local
+.env.development.local
+
+# Editores y sistema operativo
 .DS_Store
 Thumbs.db
-node_modules/
 .vscode/
 .idea/
 *.log

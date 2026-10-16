@@ -1,0 +1,32 @@
+<section id="calendario" class="app-section">
+  <div class="container">
+    <div class="section-wrapper">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-kicker">CURSO ESCOLAR 2026-2027</span>
+          <h2 class="section-title">
+            <span>📅</span> Calendario de Festivos y Exámenes
+          </h2>
+          <p class="section-subtitle">
+            Días no lectivos, semanas de exámenes oficiales y fechas de entrega de notas para 1º DAM en el
+            IES Las Encinas.
+          </p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="calendar-filters">
+          <button class="filter-chip active" data-filter="all">Todos los eventos</button>
+          <button class="filter-chip" data-filter="upcoming">Próximos</button>
+          <button class="filter-chip" data-filter="holidays">Solo Festivos</button>
+          <button class="filter-chip" data-filter="exams">Exámenes y Notas</button>
+        </div>
+      </div>
+
+      <!-- Banner del próximo festivo (se genera con JS) -->
+      <div id="upcoming-holiday-banner-wrap"></div>
+
+      <!-- Línea de tiempo de eventos (se genera con JS) -->
+      <div class="calendar-timeline" id="calendar-timeline"></div>
+    </div>
+  </div>
+</section>

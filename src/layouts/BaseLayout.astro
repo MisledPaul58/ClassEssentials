@@ -1,0 +1,68 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'ClassEssentials — 1º DAM | IES Las Encinas',
+  description = 'Portal académico oficial de 1º de DAM en el IES Las Encinas. Calculadora de faltas (evaluación continua y matrícula), calendario escolar 2026-2027 con festivos y exámenes, y repositorio de software portable para la clase.'
+} = Astro.props;
+
+const siteUrl = 'https://misledpaul58.github.io/ClassEssentials/';
+---
+
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+
+    <!-- Metadatos SEO -->
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0b0f19" />
+    <link rel="canonical" href={siteUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={siteUrl} />
+
+    <!-- Tipografía Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Favicon SVG -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><path d='M30 70 L50 25 L70 70 L50 55 Z' fill='white'/></svg>"
+    />
+
+    <!-- Aplica el tema guardado antes del primer pintado (evita parpadeos) -->
+    <script is:inline>
+      try {
+        var savedTheme = localStorage.getItem('classessentials_theme_v1');
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+      } catch (e) {}
+    </script>
+  </head>
+
+  <body>
+    <div class="bg-mesh" aria-hidden="true"></div>
+
+    <slot />
+
+    <script>
+      import '../lib/main';
+    </script>
+  </body>
+</html>

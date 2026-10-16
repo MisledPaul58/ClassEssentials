@@ -1,0 +1,73 @@
+---
+import { FILTER_OPTIONS } from '../data/announcements';
+---
+
+<section id="recursos" class="app-section">
+  <div class="container">
+    <div class="section-wrapper">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-kicker">MATERIALES Y AVISOS</span>
+          <h2 class="section-title">
+            <span>📢</span> Tablón de Recursos para 1º DAM
+          </h2>
+          <p class="section-subtitle">
+            Enlaces directos a software portable sin instalación para los ordenadores del aula, apuntes y
+            recursos sincronizados en la base de datos de la clase.
+          </p>
+        </div>
+
+        <div class="board-header-actions">
+          <span id="db-connection-status" class="db-status-badge fallback">
+            <span>☁️</span> <span id="db-status-text">Base de Datos Activa</span>
+          </span>
+          <button class="btn btn-primary" id="btn-open-publish-modal">
+            <span>➕</span> Publicar / Compartir Recurso
+          </button>
+        </div>
+      </div>
+
+      <!-- Banner del modo dueño (se genera con JS solo si hay sesión iniciada) -->
+      <div id="admin-toolbar-wrap"></div>
+
+      <!-- Barra de búsqueda y categorías -->
+      <div class="announcements-toolbar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="resource-search-input"
+            placeholder="Buscar por herramienta, asignatura, autor..."
+            aria-label="Buscar recursos"
+          />
+        </div>
+
+        <div class="category-filter-wrap">
+          <label for="resource-category-filter">Categoría:</label>
+          <select id="resource-category-filter" class="form-select">
+            {FILTER_OPTIONS.map(option => (
+              <option value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <!-- Cuadrícula de recursos (se genera con JS) -->
+      <div class="resources-grid" id="resources-grid"></div>
+
+      <!-- Explicación del funcionamiento del tablón -->
+      <div class="shared-visibility-info">
+        <span style="font-size: 1.4rem;">💡</span>
+        <div>
+          <strong>Tablón conectado y colaborativo</strong>
+          <p style="margin-top: 0.25rem;">
+            Los recursos compartidos quedan registrados para que tus compañeros puedan encontrarlos y
+            utilizarlos en las prácticas. Cada persona puede <strong>editar o borrar lo que publique mientras
+            no recargue la página</strong> (sin necesidad de crear cuentas), y el dueño de la web supervisa el
+            tablón para mantener un espacio útil y académico.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

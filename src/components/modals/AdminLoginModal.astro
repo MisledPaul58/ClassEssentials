@@ -1,0 +1,42 @@
+<!-- Modal secreto de inicio de sesión del dueño -->
+<div
+  class="modal-backdrop"
+  id="admin-login-modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="admin-login-title"
+>
+  <div class="modal-container modal-container-sm">
+    <div class="modal-header">
+      <h3 class="modal-title" id="admin-login-title">👑 Acceso de Gestión del Dueño</h3>
+      <button class="modal-close-btn" id="btn-close-admin-modal" aria-label="Cerrar">×</button>
+    </div>
+
+    <form id="admin-login-form">
+      <div class="modal-body">
+        <p>
+          Introduce tu contraseña de administrador para activar la gestión del tablón. Podrás
+          <strong>editar y borrar</strong> cualquier publicación, crear anuncios oficiales y conectar la
+          base de datos en la nube.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="admin-pin-input">Contraseña de Administrador:</label>
+          <input
+            type="password"
+            id="admin-pin-input"
+            class="form-input"
+            placeholder="Introduce tu contraseña"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-admin-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><span>🔓</span> Acceder</button>
+      </div>
+    </form>
+  </div>
+</div>

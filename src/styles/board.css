@@ -391,14 +391,20 @@
     .category-filter-wrap .form-select {
         flex: 1;
         width: auto;
+        min-width: 0;
     }
 
     .board-header-actions {
         width: 100%;
+        gap: 0.6rem;
     }
 
+    /* El botón de publicar nunca queda aplastado: si no cabe junto al
+       indicador de estado, baja a su propia fila a ancho completo. */
     .board-header-actions .btn-primary {
-        flex: 1;
+        flex: 1 1 240px;
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
     }
 
     .resource-card {

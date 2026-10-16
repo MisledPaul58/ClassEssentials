@@ -480,8 +480,12 @@
         padding: 1.15rem 1.1rem;
     }
 
+    /* Estadísticas en 2×2: más compacto y parecido a la vista de PC */
     .matricula-stats-row {
-        gap: 1rem 1.4rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.85rem 1.25rem;
+        margin-bottom: 0.85rem;
     }
 
     .stat-num {
@@ -502,13 +506,7 @@
 }
 
 @media (max-width: 440px) {
-    /* En pantallas muy estrechas, los dos contadores pasan a una columna */
-    .module-inputs-row {
-        grid-template-columns: 1fr;
-        gap: 0.6rem;
-        padding: 0.7rem;
-    }
-
+    /* Botones de contador más grandes para el dedo */
     .stepper-btn {
         width: 38px;
         height: 38px;
@@ -516,5 +514,14 @@
 
     .stepper-input {
         height: 38px;
+    }
+}
+
+@media (max-width: 360px) {
+    /* Solo en pantallas realmente estrechas los dos contadores pasan a una columna */
+    .module-inputs-row {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+        padding: 0.7rem;
     }
 }

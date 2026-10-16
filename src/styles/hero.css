@@ -134,7 +134,7 @@
     }
 
     .hero-card {
-        padding: 1.4rem 1.15rem;
+        padding: 1.25rem 1rem;
     }
 
     .hero-title {
@@ -143,6 +143,11 @@
 
     .hero-desc {
         font-size: 0.95rem;
+    }
+
+    .quick-widgets-grid {
+        gap: 0.75rem;
+        margin-top: 0.5rem;
     }
 
     .widget-card {

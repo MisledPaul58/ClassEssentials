@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// ============================================================================
+// ClassEssentials — Reglas de seguridad recomendadas para Firestore
+// ============================================================================
+// CÓMO APLICARLAS:
+//   1. Entra en https://console.firebase.google.com → tu proyecto ClassEssentials.
+//   2. Firestore Database → pestaña "Reglas".
+//   3. Pega el contenido de este archivo (a partir de `rules_version`) y pulsa
+//      "Publicar".
+//
+// IMPORTANTE (sé realista): la web no usa cuentas de usuario, por lo que
+// cualquiera puede técnicamente llamar a la base de datos. Estas reglas
+// validan el formato de los datos (evitan basura y vandalismo masivo) y
+// bloquean que se borren los anuncios oficiales creados por el dueño desde
+// la consola. Para protección fuerte, activa Firebase App Check
+// (ver README → "Seguridad").
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidAnnouncement(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 140
+        && data.description is string && data.description.size() > 0 && data.description.size() <= 2500
+        && data.author is string && data.author.size() <= 80
+        && data.category in ['Software Portable', 'Guías y Chuletas', 'Apuntes y Ejercicios', 'Aviso', 'Otro']
+        && data.link is string && data.link.size() <= 500
+        && data.linkText is string && data.linkText.size() <= 120
+        && data.isOfficial is bool
+        && (data.ownerToken == null || (data.ownerToken is string && data.ownerToken.size() <= 64));
+    }
+
+    match /announcements/{postId} {
+      // Lectura pública: el tablón es visible para toda la clase.
+      allow read: if true;
+
+      // Crear: solo documentos con un formato válido.
+      allow create: if isValidAnnouncement(request.resource.data);
+
+      // Editar: mantiene autor/creación y respeta el formato.
+      allow update: if isValidAnnouncement(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      // Borrar: permitido, pero los anuncios oficiales (sin ownerToken y con
+      // isOfficial == true) solo pueden borrarse desde la consola de Firebase.
+      allow delete: if !(resource.data.isOfficial == true && resource.data.ownerToken == null);
+    }
+  }
+}

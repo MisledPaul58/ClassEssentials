@@ -1,0 +1,66 @@
+# ============================================================================
+# Despliegue automático de ClassEssentials en GitHub Pages
+# ============================================================================
+# Cada vez que se hace push a `main` (o se lanza manualmente desde la pestaña
+# Actions), Astro construye la web y la publica en:
+#   https://misledpaul58.github.io/ClassEssentials/
+#
+# Los secretos (config de Firebase y hash de la contraseña de dueño) se leen
+# de los Secrets del repositorio y NO quedan guardados en el código fuente.
+# ============================================================================
+
+name: Deploy a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Construir (Astro)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Construir la web con Astro
+        run: npm run build
+        env:
+          PUBLIC_FIREBASE_CONFIG: ${{ secrets.PUBLIC_FIREBASE_CONFIG }}
+          PUBLIC_ADMIN_PIN_HASH: ${{ secrets.PUBLIC_ADMIN_PIN_HASH }}
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Publicar en GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar
+        id: deployment
+        uses: actions/deploy-pages@v4

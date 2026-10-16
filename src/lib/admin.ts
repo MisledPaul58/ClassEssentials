@@ -170,15 +170,15 @@ async function isPinValid(pin: string): Promise<boolean> {
   const customHash = readString(STORAGE_KEYS.customAdminPwdHash);
   if (customHash) return enteredHash === customHash;
 
-  // Migración automática desde la contraseña antigua guardada en texto plano.
+  // Migración automática desde la contraseña antigua guardada en texto plano:
+  // si el usuario la introduce, pasa a guardarse hasheada y se borra la vieja.
+  // Si no coincide, se sigue comprobando la contraseña global (así el PIN del
+  // dueño funciona aunque queden restos de la versión antigua en el navegador).
   const legacyPassword = readString(STORAGE_KEYS.legacyCustomAdminPwd);
-  if (legacyPassword) {
-    if (pin === legacyPassword) {
-      writeString(STORAGE_KEYS.customAdminPwdHash, enteredHash);
-      removeKey(STORAGE_KEYS.legacyCustomAdminPwd);
-      return true;
-    }
-    return false;
+  if (legacyPassword && pin === legacyPassword) {
+    writeString(STORAGE_KEYS.customAdminPwdHash, enteredHash);
+    removeKey(STORAGE_KEYS.legacyCustomAdminPwd);
+    return true;
   }
 
   if (!ADMIN_PIN_HASH) {
